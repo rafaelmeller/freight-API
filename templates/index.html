@@ -1,21 +1,48 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Freight Quote</title>
-    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body>
-    <div class="container">
-        <!-- Form to enter freight details -->
-        <form id="freightForm">
-            <!-- Input fields for freight details -->
-            <button type="submit" class="btn btn-primary">Get Quote</button>
-        </form>
-        <div id="quoteResult"></div>
-    </div>
-    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-    <script src="app.js"></script>
-</body>
-</html>
+{% extends "layout.html" %}
+{% block title %}Cotação de Fretes{% endblock %}
+{% block header %}Cotação de Fretes{% endblock %}
+{% block main %}
+    <!-- Form to enter freight details -->
+    <form action="/submit" id="mainForm" method="post">
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <input autocomplete="off" autofocus class="form-control" type="text" name="cnpj_remetente" placeholder="CNPJ do Remetente">
+            </div>
+            <div class="col-md-6 mb-3">
+                <input autocomplete="off" class="form-control" type="text" name="cnpj_destinatario" placeholder="CNPJ do Destinatário">
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <input autocomplete="off" class="form-control" type="text" name="cep_origem" placeholder="CEP de origem">
+            </div>
+            <div class="col-md-6 mb-3">
+                <input autocomplete="off" class="form-control" type="text" name="cep_destino" placeholder="CEP de destino">
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <input autocomplete="off" class="form-control" type="text" name="tipo_frete" placeholder="tipo do frete">
+            </div>
+            <div class="col-md-6 mb-3">
+                <input autocomplete="off" class="form-control" type="text" name="vlr_mercadoria" placeholder="valor da Mercadoria">
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <input autocomplete="off" class="form-control" type="text" name="peso" placeholder="Peso total">
+            </div>
+            <div class="col-md-6 mb-3">
+                <input autocomplete="off" id="volumesTotal" class="form-control" type="number" name="volumes_total" placeholder="Total de volumes" oninput="updateVolumeFields()">
+            </div>
+        </div>           
+        <div class="button-container">
+            <button type="submit" id="submitButton" class="btn btn-primary">Realizar cotação</button>
+        </div>
+        <!-- Volume dimensions form -->
+        <div id="volumeFields"></div>
+        <div class="button-container">
+            <button type="button" id="addVolumeGroup" class="btn btn-secondary">Adicionar novo volume</button>
+        </div>
+    </form>
+{% endblock %}
