@@ -1,4 +1,4 @@
-from flask import Flask, flash, redirect, render_template, request
+from flask import Flask, flash, redirect, render_template, request, url_for
 import requests
 import os
 import json
@@ -15,15 +15,27 @@ def index():
 @app.route('/submit', methods=['POST'])
 def submit():
     
-    cnpj_remetente = request.form['cnpj_remetente']
-    cnpj_destinatario = request.form['cnpj_destinatario']
-    modalidade = request.form['modalidade']
-    tipo_frete = request.form['tipo_frete']
-    cep_origem = request.form['cep_origem']
-    cep_destino = request.form['cep_destino']
-    vlr_mercadoria = request.form['vlr_mercadoria']
-    peso_total = request.form['peso_total']
-    volumes_total = int(request.form['volumes_total'])
+    cnpj_remetente = request.form['cnpj_remetente'].replace(".", "").replace("/", "").replace("-", "").replace(" ", "")
+    cnpj_destinatario = request.form['cnpj_destinatario'].replace(".", "").replace("/", "").replace("-", "").replace(" ", "")
+    modalidade = "R"
+    tipo_frete = request.form['tipo_frete'].replace(" ", "")
+    cep_origem = request.form['cep_origem'].replace(".", "").replace("-", "").replace(" ", "")
+    cep_destino = request.form['cep_destino'].replace(".", "").replace("-", "").replace(" ", "")
+    try:
+        vlr_mercadoria = float(request.form['vlr_mercadoria'].replace(',', '.').replace(" ", ""))
+    except ValueError:
+        flash("Valor da mercadoria inválido")
+        return redirect(url_for('index'))
+    try:
+        peso_total = float(request.form['peso_total'].replace(',', '.').replace(" ", ""))
+    except ValueError:
+        flash("Valor do peso total inválido")
+        return redirect(url_for('index'))
+    try:
+        volumes_total = int(request.form['volumes_total'].replace(" ", ""))
+    except ValueError:
+        flash("Valor total de volumes inválido")
+        return redirect(url_for('index'))
     
     cubagem = []
 
@@ -38,10 +50,10 @@ def submit():
 
         # Check if these keys exist in the form data
         if altura_key in request.form and largura_key in request.form and comprimento_key in request.form and volumes_key in request.form:
-            altura = request.form[altura_key]
-            largura = request.form[largura_key]
-            comprimento = request.form[comprimento_key]
-            volumes = request.form[volumes_key]
+            altura = float(request.form[altura_key].replace(',', '.').replace(" ", ""))
+            largura = float(request.form[largura_key].replace(',', '.').replace(" ", ""))
+            comprimento = float(request.form[comprimento_key].replace(',', '.').replace(" ", ""))
+            volumes = int(request.form[volumes_key].replace(" ", ""))
 
             # Store the volume group data
             cubagem.append({
@@ -67,7 +79,8 @@ def submit():
     }
     # Created just for testing
     json_string = json.dumps(data, indent=4)
-    return print(json_string)
+    print(json_string)
+    return redirect(url_for('index'))
 
 
 
