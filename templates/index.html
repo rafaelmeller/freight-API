@@ -3,37 +3,45 @@
 {% block header %}Cotação de Fretes{% endblock %}
 {% block main %}
     <!-- Form to enter freight details -->
-    <form action="/submit" id="mainForm" method="post">
+    <form action="/submit" id="mainForm" method="POST">
         <div class="row">
             <div class="col-md-6 mb-3">
-                <input autocomplete="off" autofocus class="form-control" type="text" name="cnpj_remetente" placeholder="CNPJ do Remetente">
+                <label for="cnpj_remetente">CNPJ do Remetente:</label>
+                <input required autocomplete="off" class="form-control" type="text" name="cnpj_remetente" id="cnpj_remetente" placeholder="CNPJ do Remetente">
             </div>
             <div class="col-md-6 mb-3">
-                <input autocomplete="off" class="form-control" type="text" name="cnpj_destinatario" placeholder="CNPJ do Destinatário">
+                <label for="cnpj_destinatario">CNPJ do Destinatário:</label>
+                <input required autocomplete="off" autofocus class="form-control" type="text" name="cnpj_destinatario" id="cnpj_destinatario" placeholder="CNPJ do Destinatário">
             </div>
         </div>
         <div class="row">
             <div class="col-md-6 mb-3">
-                <input autocomplete="off" class="form-control" type="text" name="cep_origem" placeholder="CEP de origem">
+                <label for="cep_origem">CEP de origem:</label>
+                <input required autocomplete="off" class="form-control" type="text" name="cep_origem" id="cep_origem" placeholder="CEP de origem">
             </div>
             <div class="col-md-6 mb-3">
-                <input autocomplete="off" class="form-control" type="text" name="cep_destino" placeholder="CEP de destino">
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-md-6 mb-3">
-                <input autocomplete="off" class="form-control" type="text" name="tipo_frete" placeholder="tipo do frete">
-            </div>
-            <div class="col-md-6 mb-3">
-                <input autocomplete="off" class="form-control" type="text" name="vlr_mercadoria" placeholder="valor da Mercadoria">
+                <label for="cep_destino">CEP de destino:</label>
+                <input required autocomplete="off" class="form-control" type="text" name="cep_destino" id="cep_destino" placeholder="CEP de destino">
             </div>
         </div>
         <div class="row">
             <div class="col-md-6 mb-3">
-                <input autocomplete="off" class="form-control" type="text" name="peso" placeholder="Peso total">
+                <label for="tipo_frete">Tipo do frete:</label>
+                <input required autocomplete="off" class="form-control" type="text" name="tipo_frete" id="tipo_frete" placeholder="Tipo do frete">
             </div>
             <div class="col-md-6 mb-3">
-                <input autocomplete="off" id="volumesTotal" class="form-control" type="number" name="volumes_total" placeholder="Total de volumes" oninput="updateVolumeFields()">
+                <label for="vlr_mercadoria">Valor da Mercadoria:</label>
+                <input required autocomplete="off" class="form-control" type="text" name="vlr_mercadoria" id="vlr_mercadoria" placeholder="Valor da Mercadoria">
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label for="peso">Peso total:</label>
+                <input required autocomplete="off" class="form-control" type="text" name="peso" id="peso" placeholder="Peso total">
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="volumes_total">Total de volumes:</label>
+                <input required id="volumesTotal" class="form-control" type="number" name="volumes_total" id="volumes_total" readonly>
             </div>
         </div>           
         <div class="button-container">
