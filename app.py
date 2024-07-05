@@ -1,10 +1,11 @@
-from flask import Flask, flash, redirect, render_template, request, url_for
+from flask import Flask, redirect, render_template, request, url_for
 import requests
 import os
 import json
 
-auth_key = os.environ.get('BRASPRESS_AUTH_KEY')
-headers = {'Authorization': f'Basic {auth_key}'}   
+# isolate for TESTING
+# auth_key = os.environ.get('BRASPRESS_AUTH_KEY')
+# headers = {'Authorization': f'Basic {auth_key}'}   
 
 app = Flask(__name__)
 
@@ -12,59 +13,101 @@ app = Flask(__name__)
 def index():
     return render_template('index.html')
 
+@app.route('/error/<int:code>/<path:error_message>')
+def error(error_message, code):
+    return render_template('error.html', error_message=error_message, code=code)
+
 @app.route('/submit', methods=['POST'])
 def submit():
+    # TEST
+    print("submission working")
+
+    def sanitize_text(input_string):
+        for char in [".", "/", "-", " "]:
+            input_string = input_string.replace(char, "")
+        return input_string
     
-    cnpj_remetente = request.form['cnpj_remetente'].replace(".", "").replace("/", "").replace("-", "").replace(" ", "")
-    cnpj_destinatario = request.form['cnpj_destinatario'].replace(".", "").replace("/", "").replace("-", "").replace(" ", "")
-    modalidade = "R"
-    tipo_frete = request.form['tipo_frete'].replace(" ", "")
-    cep_origem = request.form['cep_origem'].replace(".", "").replace("-", "").replace(" ", "")
-    cep_destino = request.form['cep_destino'].replace(".", "").replace("-", "").replace(" ", "")
+    def sanitize_num(input_string):
+        if "," in input_string:
+            input_string = input_string.replace(",", ".")
+        elif " " in input_string:
+            input_string = input_string.replace(" ", "")   
+        return input_string
+
+    cnpj_remetente = int(sanitize_text(request.form['cnpj_remetente']))
+    cnpj_destinatario = int(sanitize_text(request.form['cnpj_destinatario']))
+    modalidade = "R" 
+    cep_origem = int(sanitize_text(request.form['cep_origem']))
+    cep_destino = int(sanitize_text(request.form['cep_destino']))
+    print("cep_destino") #TEST
+    tipo_frete = sanitize_text(request.form['tipo_frete'])
+    print("tipo_frete") #TEST
     try:
-        vlr_mercadoria = float(request.form['vlr_mercadoria'].replace(',', '.').replace(" ", ""))
+        vlr_mercadoria = float(sanitize_num(request.form['vlr_mercadoria']))
     except ValueError:
-        flash("Valor da mercadoria inválido")
-        return redirect(url_for('index'))
+        return error("Valor da mercadoria inválido", 400)
+    print("vlr_mercadoria") #TEST
     try:
-        peso_total = float(request.form['peso_total'].replace(',', '.').replace(" ", ""))
+        peso_total = float(sanitize_num(request.form['peso_total']))
     except ValueError:
-        flash("Valor do peso total inválido")
-        return redirect(url_for('index'))
+        return error("Valor do peso inválido", 400)
+    print("peso_total") #TEST
     try:
-        volumes_total = int(request.form['volumes_total'].replace(" ", ""))
+        volumes_total = int(sanitize_num(request.form['volumes_total']))
     except ValueError:
-        flash("Valor total de volumes inválido")
-        return redirect(url_for('index'))
-    
+        return error("Total de volumes inválido", 400)
+
+    print("volumes_total") #TEST
+
     cubagem = []
 
-    volume_group_ids = request.form['volumeGroupIds'].split(',')
+    # TEST
+    data_test = {
+            "cnpjRemetente": cnpj_remetente,
+            "cnpjDestinatario": cnpj_destinatario,
+            "modal": modalidade,
+            "tipoFrete": tipo_frete,
+            "cepOrigem": cep_origem,
+            "cepDestino": cep_destino,
+            "vlrMercadoria": vlr_mercadoria,
+            "peso": peso_total,
+            "volumes": volumes_total,
+    }
+    print("Data test created")   
+    
+    print(request.form['volumeGroupIds']) #TEST
+
+    volume_group_ids = request.form['volumeGroupIds'].split(",")   
+
+    print(volume_group_ids) #TEST
+    print(request.form) #TEST
 
         # Dynamically handle volume groups
     for i in volume_group_ids:
         altura_key = f'altura{i}'
+        print(altura_key) #TEST
         largura_key = f'largura{i}'
+        print(largura_key) #TEST
         comprimento_key = f'comprimento{i}'
+        print(comprimento_key) #TEST
         volumes_key = f'volumes{i}'
+        print(volumes_key) #TEST
 
-        # Check if these keys exist in the form data
-        if altura_key in request.form and largura_key in request.form and comprimento_key in request.form and volumes_key in request.form:
-            altura = float(request.form[altura_key].replace(',', '.').replace(" ", ""))
-            largura = float(request.form[largura_key].replace(',', '.').replace(" ", ""))
-            comprimento = float(request.form[comprimento_key].replace(',', '.').replace(" ", ""))
-            volumes = int(request.form[volumes_key].replace(" ", ""))
+        
+        
+        altura = float(sanitize_num(request.form[altura_key]))
+        largura = float(sanitize_num(request.form[largura_key]))
+        comprimento = float(sanitize_num(request.form[comprimento_key]))
+        volumes = int(sanitize_num(request.form[volumes_key]))
 
-            # Store the volume group data
-            cubagem.append({
-                "altura": altura,
-                "largura": largura,
-                "comprimento": comprimento,
-                "volumes": volumes
-            })
-        else:
-            return flash(f"Campo do volume {i} está em branco")
-
+        # Store the volume group data
+        cubagem.append({
+            "altura": altura,
+            "largura": largura,
+            "comprimento": comprimento,
+            "volumes": volumes
+        })
+       
     data = {
             "cnpjRemetente": cnpj_remetente,
             "cnpjDestinatario": cnpj_destinatario,
@@ -77,15 +120,16 @@ def submit():
             "volumes": volumes_total,
             "cubagem": cubagem
     }
-    # Created just for testing
+    # TEST
     json_string = json.dumps(data, indent=4)
+    print("JSON STRING")
     print(json_string)
     return redirect(url_for('index'))
 
 
 
 
-    # Isolated for testing
+    # Isolated for TESTING
     # response = requests.post('https://api.braspress.com/v1/cotacao/calcular/json', json=data, headers=headers)
     # result = response.json()
     # return render_template('result.html', result=result)
