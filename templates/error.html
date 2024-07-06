@@ -1,0 +1,9 @@
+{% extends "layout.html" %}
+{% block title %}Erro{% endblock %}
+{% block header %}Algo deu errado...{% endblock %}
+{% block main %}
+    <h5 class="text-center">(Erro {{ code }}): {{ error_message }}</h5>
+    <div class="container-imagem">
+        <img alt="Erro {{ code }}" class="border img-fluid" src="static/error_icon.png" title="Erro {{ code }}">
+    </div>
+{% endblock %}
