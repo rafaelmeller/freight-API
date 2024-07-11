@@ -73,26 +73,20 @@ function addVolumeGroup() {
 function removeVolumeGroup(volumeGroupId) {
     const volumeGroup = document.getElementById(`volumeGroup${volumeGroupId}`);
     if (volumeGroup) {
+        // Ensure volumeGroupId is of the same type as the elements in volumeGroupIds
+        const isNumericArray = typeof volumeGroupIds[0] === 'number';
+        const normalizedVolumeGroupId = isNumericArray ? Number(volumeGroupId) : String(volumeGroupId);
 
-        //TODO Check if volumeGroup${volumeGroupId} is an array or a string, print it to the console 
-        // create an if statement to handle both cases
-
-        // Convert volumeGroupIds string to array
-        let volumeGroupIdsArray = volumeGroupIds.split(',');
-
-        // Store the volumeGroupId in deletedVolumeGroupId before removing the volumeGroup
-        let deletedVolumeGroupId = volumeGroupId.toString();
-
-        // Remove the deletedVolumeGroupId from volumeGroupIdsArray
-        const index = volumeGroupIdsArray.indexOf(deletedVolumeGroupId);
+        // Remove volumeGroupId from volumeGroupIds
+        const index = volumeGroupIds.indexOf(normalizedVolumeGroupId);
         if (index > -1) {
-            volumeGroupIdsArray.splice(index, 1);
+            volumeGroupIds.splice(index, 1);
         }
-
-        // Convert volumeGroupIdsArray back to string and assign to volumeGroupIds
-        volumeGroupIds = volumeGroupIdsArray.join(',');
-
+        // Removes the volume group
         volumeGroup.remove();
+
+        updateVolumeGroupIds();
+
         updateVolumesTotal();
     } else {
         // If the element wasn't found, log or handle the error
@@ -119,11 +113,11 @@ function validateAndSubmitForm(event) {
 
     if (allFilled) {
         // Form is valid, proceed with submission
-        document.getElementById('volumeGroupIds').value = volumeGroupIds.join(','); // Set the value of the hidden input field
+        document.getElementById('volumeGroupIds').value = volumeGroupIds.join(','); // Set the value of the hidden input field as a string of volumeGroupIds
 
         document.getElementById('myForm').submit(); // This submits the form
     } else {
-        alert('Please fill in all fields before submitting.');
+        alert('Por favor, preencha todos os campos obrigatórios.');
     }
 }
 
