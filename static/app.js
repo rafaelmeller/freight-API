@@ -41,22 +41,22 @@ function addVolumeGroup() {
         <div class="volume-group" id="volumeGroup${volumeGroupIdCounter}">
             <div class="row">
                 <div class="col-md-6 mb-3">
-                    <label for="altura${volumeGroupIdCounter}">Altura do volume:</label>
-                    <input required autocomplete="off" class="form-control" type="text" name="altura${volumeGroupIdCounter}" placeholder="Altura do volume">
+                    <label for="idAltura${volumeGroupIdCounter}">Altura do volume:</label>
+                    <input required autocomplete="off" class="form-control format-number" type="number" id="idAltura${volumeGroupIdCounter}" name="altura${volumeGroupIdCounter}" placeholder="Altura do volume">
                 </div>
                 <div class="col-md-6 mb-3">
-                    <label for="largura${volumeGroupIdCounter}">Largura do volume:</label>
-                    <input required autocomplete="off" class="form-control" type="text" name="largura${volumeGroupIdCounter}" placeholder="Largura do volume">
+                    <label for="idLargura${volumeGroupIdCounter}">Largura do volume:</label>
+                    <input required autocomplete="off" class="form-control format-number" type="number" id="idLargura${volumeGroupIdCounter}" name="largura${volumeGroupIdCounter}" placeholder="Largura do volume">
                 </div>
             </div>
             <div class="row">
                 <div class="col-md-6 mb-3">
-                    <label for="comprimento${volumeGroupIdCounter}">Comprimento do volume:</label>
-                    <input required autocomplete="off" class="form-control" type="text" name="comprimento${volumeGroupIdCounter}" placeholder="Comprimento do volume">
+                    <label for="idComprimento${volumeGroupIdCounter}">Comprimento do volume:</label>
+                    <input required autocomplete="off" class="form-control format-number" type="number" id="idComprimento${volumeGroupIdCounter}" name="comprimento${volumeGroupIdCounter}" placeholder="Comprimento do volume">
                 </div>
                 <div class="col-md-6 mb-3">
-                    <label for="volumes${volumeGroupIdCounter}">Quantidade de volumes:</label>
-                    <input required autocomplete="off" class="form-control" type="number" name="volumes${volumeGroupIdCounter}" placeholder="Quantidade de volumes" oninput="updateVolumesTotal()">
+                    <label for="idVolumes${volumeGroupIdCounter}">Quantidade de volumes:</label>
+                    <input required autocomplete="off" class="form-control dynamicVolumes" type="number" id="idVolumes${volumeGroupIdCounter}" name="volumes${volumeGroupIdCounter}" placeholder="Quantidade de volumes" oninput="updateVolumesTotal()">
                 </div>
                 <div class="col-md-6 mb-3">
                     <button type="button" class="btn btn-danger" onclick="removeVolumeGroup(${volumeGroupIdCounter})">Remover volume</button>
@@ -64,7 +64,8 @@ function addVolumeGroup() {
             </div>
         </div>
     `;
-    volumeFieldsContainer.innerHTML += volumeGroupHTML;
+    volumeFieldsContainer.insertAdjacentHTML('beforeend', volumeGroupHTML);
+    // volumeFieldsContainer.innerHTML += volumeGroupHTML;
     volumeGroupIds.push(volumeGroupIdCounter);
     volumeGroupIdCounter += 1; // Increment the counter after adding a new volume group
     updateVolumeGroupIds();
@@ -96,11 +97,23 @@ function removeVolumeGroup(volumeGroupId) {
 
 function updateVolumesTotal() {
     let total = 0;
-    document.querySelectorAll('.volume-group input[type="number"]').forEach(function(input) {
+
+    // Select all the input fields with the class 'dynamicVolumes' and calculate the total
+    document.querySelectorAll('.dynamicVolumes').forEach(function(input) {
         total += parseInt(input.value, 10) || 0;
     });
     document.getElementById('volumesTotal').value = total;
 }
+
+// Format number fields to two decimal places on blur
+document.addEventListener('blur', function(event) {
+    if (event.target.classList.contains('format-number')) {
+        var value = parseFloat(event.target.value);
+        if (!isNaN(value)) {
+            event.target.value = value.toFixed(2);
+        }
+    }
+}, true);
 
 function validateAndSubmitForm(event) {
     event.preventDefault(); // Prevent form submission

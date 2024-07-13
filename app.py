@@ -34,24 +34,57 @@ def submit():
             input_string = input_string.replace(" ", "")   
         return input_string
 
-    cnpj_remetente = int(sanitize_text(request.form['cnpj_remetente']))
-    cnpj_destinatario = int(sanitize_text(request.form['cnpj_destinatario']))
+    try:
+        cnpj_remetente = int(sanitize_text(request.form['cnpj_remetente']))
+    except ValueError:
+        return error("CNPJ do remetente inválido", 400)
+    
+    try:
+        cnpj_destinatario = int(sanitize_text(request.form['cnpj_destinatario']))
+    except ValueError:
+        return error("CNPJ do destinatário inválido", 400)
+    
     modalidade = "R" 
-    cep_origem = int(sanitize_text(request.form['cep_origem']))
-    cep_destino = int(sanitize_text(request.form['cep_destino']))
+    
+    try:
+        cep_origem = int(sanitize_text(request.form['cep_origem']))
+    except ValueError:
+        return error("CEP de origem inválido", 400)
+    
+    try:
+        cep_destino = int(sanitize_text(request.form['cep_destino']))
+    except ValueError:
+        return error("CEP de destino inválido", 400)
+    
     print("cep_destino") #TEST
-    tipo_frete = sanitize_text(request.form['tipo_frete'])
+
+    input_frete = sanitize_text(request.form['tipo_frete']).upper()
+    if input_frete == "CIF":
+        tipo_frete = "1"
+    elif input_frete == "FOB":
+        tipo_frete = "2"
+    elif input_frete == "CONSIGNADO":
+        tipo_frete = "3"
+    else:
+        return error("Tipo de frete inválido", 400)
+    
     print("tipo_frete") #TEST
+    print(f"{input_frete}: {tipo_frete}") #TEST
+
     try:
         vlr_mercadoria = float(sanitize_num(request.form['vlr_mercadoria']))
     except ValueError:
         return error("Valor da mercadoria inválido", 400)
+    
     print("vlr_mercadoria") #TEST
+
     try:
         peso_total = float(sanitize_num(request.form['peso_total']))
     except ValueError:
         return error("Valor do peso inválido", 400)
+    
     print("peso_total") #TEST
+
     try:
         volumes_total = int(sanitize_num(request.form['volumes_total']))
     except ValueError:
@@ -61,19 +94,7 @@ def submit():
 
     cubagem = []
 
-    # TEST
-    data_test = {
-            "cnpjRemetente": cnpj_remetente,
-            "cnpjDestinatario": cnpj_destinatario,
-            "modal": modalidade,
-            "tipoFrete": tipo_frete,
-            "cepOrigem": cep_origem,
-            "cepDestino": cep_destino,
-            "vlrMercadoria": vlr_mercadoria,
-            "peso": peso_total,
-            "volumes": volumes_total,
-    }
-    print("Data test created")   
+    print("main forms succesful") #TEST 
     
     print(request.form['volumeGroupIds']) #TEST
 
