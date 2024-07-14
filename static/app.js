@@ -1,23 +1,21 @@
-// JavaScript code for dynamic volume field management and form validation
-
 document.addEventListener('DOMContentLoaded', function() {
     // Attach event listeners
     document.getElementById('addVolumeGroup').addEventListener('click', addVolumeGroup);
     document.addEventListener('input', updateSubmitButtonState);
 
-    // Initialize the form with one volume group
+    // Initialize the form
     updateVolumeFields();
     
     // Ensure the total is correct after the initial volume group is added
     updateVolumesTotal();
 
     // Attach the validateAndSubmitForm function to the form's submit event
-    document.getElementById('myForm').addEventListener('submit', validateAndSubmitForm);
+    document.getElementById('mainForm').addEventListener('submit', validateAndSubmitForm);
 
 });
 
-let volumeGroupIds = []; // Global declaration
-let volumeGroupIdCounter = 1; // Global declaration
+let volumeGroupIds = [];
+let volumeGroupIdCounter = 1;
 
 function updateVolumeFields() {
     // Clear existing volume fields and reset counter
@@ -41,18 +39,18 @@ function addVolumeGroup() {
         <div class="volume-group" id="volumeGroup${volumeGroupIdCounter}">
             <div class="row">
                 <div class="col-md-6 mb-3">
-                    <label for="idAltura${volumeGroupIdCounter}">Altura do volume:</label>
-                    <input required autocomplete="off" class="form-control format-number" type="number" id="idAltura${volumeGroupIdCounter}" name="altura${volumeGroupIdCounter}" placeholder="Altura do volume">
+                    <label for="idAltura${volumeGroupIdCounter}">Altura do volume(m):</label>
+                    <input required autocomplete="off" class="form-control format-number" type="number" id="idAltura${volumeGroupIdCounter}" name="altura${volumeGroupIdCounter}" placeholder="Altura do volume" step="0.01">
                 </div>
                 <div class="col-md-6 mb-3">
-                    <label for="idLargura${volumeGroupIdCounter}">Largura do volume:</label>
-                    <input required autocomplete="off" class="form-control format-number" type="number" id="idLargura${volumeGroupIdCounter}" name="largura${volumeGroupIdCounter}" placeholder="Largura do volume">
+                    <label for="idLargura${volumeGroupIdCounter}">Largura do volume(m):</label>
+                    <input required autocomplete="off" class="form-control format-number" type="number" id="idLargura${volumeGroupIdCounter}" name="largura${volumeGroupIdCounter}" placeholder="Largura do volume" step="0.01">
                 </div>
             </div>
             <div class="row">
                 <div class="col-md-6 mb-3">
-                    <label for="idComprimento${volumeGroupIdCounter}">Comprimento do volume:</label>
-                    <input required autocomplete="off" class="form-control format-number" type="number" id="idComprimento${volumeGroupIdCounter}" name="comprimento${volumeGroupIdCounter}" placeholder="Comprimento do volume">
+                    <label for="idComprimento${volumeGroupIdCounter}">Comprimento do volume(m):</label>
+                    <input required autocomplete="off" class="form-control format-number" type="number" id="idComprimento${volumeGroupIdCounter}" name="comprimento${volumeGroupIdCounter}" placeholder="Comprimento do volume" step="0.01">
                 </div>
                 <div class="col-md-6 mb-3">
                     <label for="idVolumes${volumeGroupIdCounter}">Quantidade de volumes:</label>
@@ -83,7 +81,7 @@ function removeVolumeGroup(volumeGroupId) {
         if (index > -1) {
             volumeGroupIds.splice(index, 1);
         }
-        // Removes the volume group
+        
         volumeGroup.remove();
 
         updateVolumeGroupIds();
@@ -118,7 +116,7 @@ document.addEventListener('blur', function(event) {
 function validateAndSubmitForm(event) {
     event.preventDefault(); // Prevent form submission
     let allFilled = true;
-    document.querySelectorAll('#myForm input').forEach(function(input) {
+    document.querySelectorAll('#mainForm input').forEach(function(input) {
         if (input.value === '') {
             allFilled = false;
         }
@@ -128,7 +126,7 @@ function validateAndSubmitForm(event) {
         // Form is valid, proceed with submission
         document.getElementById('volumeGroupIds').value = volumeGroupIds.join(','); // Set the value of the hidden input field as a string of volumeGroupIds
 
-        document.getElementById('myForm').submit(); // This submits the form
+        document.getElementById('mainForm').submit(); // This submits the form
     } else {
         alert('Por favor, preencha todos os campos obrigatórios.');
     }
@@ -136,7 +134,7 @@ function validateAndSubmitForm(event) {
 
 function updateSubmitButtonState() {
     let allFilled = true;
-    document.querySelectorAll('#myForm input').forEach(function(input) {
+    document.querySelectorAll('#mainForm input').forEach(function(input) {
         if (input.value === '') {
             allFilled = false;
         }

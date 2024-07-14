@@ -6,38 +6,42 @@
     <form action="/submit" id="mainForm" method="POST">
         <div class="row">
             <div class="col-md-6 mb-3">
-                <label for="cnpj_remetente">CNPJ do Remetente:</label>
+                <label for="cnpjRemetente">CNPJ do Remetente:</label>
                 <input required autocomplete="off" class="form-control" type="text" name="cnpj_remetente" id="cnpjRemetente" placeholder="CNPJ do Remetente">
             </div>
             <div class="col-md-6 mb-3">
-                <label for="cnpj_destinatario">CNPJ do Destinatário:</label>
+                <label for="cnpjDestinatario">CNPJ do Destinatário:</label>
                 <input required autocomplete="off" autofocus class="form-control" type="text" name="cnpj_destinatario" id="cnpjDestinatario" placeholder="CNPJ do Destinatário">
             </div>
         </div>
         <div class="row">
             <div class="col-md-6 mb-3">
-                <label for="cep_origem">CEP de origem:</label>
+                <label for="cepOrigem">CEP de origem:</label>
                 <input required autocomplete="off" class="form-control" type="text" name="cep_origem" id="cepOrigem" placeholder="CEP de origem">
             </div>
             <div class="col-md-6 mb-3">
-                <label for="cep_destino">CEP de destino:</label>
+                <label for="cepDestino">CEP de destino:</label>
                 <input required autocomplete="off" class="form-control" type="text" name="cep_destino" id="cepDestino" placeholder="CEP de destino">
             </div>
         </div>
         <div class="row">
             <div class="col-md-6 mb-3">
-                <label for="tipo_frete">Tipo do frete:</label>
-                <input required autocomplete="off" class="form-control" type="text" name="tipo_frete" id="tipoFrete" placeholder="Tipo do frete">
+                <label for="tipoFrete">Tipo de frete:</label>
+                <select required class="form-control" name="tipo_frete" id="tipoFrete">
+                    <option value="" disabled selected>Selecione o tipo de frete</option>
+                    <option value="1">CIF (remetente pagante)</option>
+                    <option value="2">FOB (destinatário pagante)</option>
+                </select>
             </div>
             <div class="col-md-6 mb-3">
-                <label for="vlr_mercadoria">Valor da Mercadoria:</label>
-                <input required autocomplete="off" class="form-control" type="text" name="vlr_mercadoria" id="vlrMercadoria" placeholder="Valor da Mercadoria">
+                <label for="vlrMercadoria">Valor da Mercadoria:</label>
+                <input required autocomplete="off" class="form-control format-number" type="number" name="vlr_mercadoria" id="vlrMercadoria" placeholder="Valor da Mercadoria" step="0.01">
             </div>
         </div>
         <div class="row">
             <div class="col-md-6 mb-3">
-                <label for="peso">Peso total:</label>
-                <input required autocomplete="off" class="form-control" type="text" name="peso_total" id="pesoTotal" placeholder="Peso total">
+                <label for="pesoTotal">Peso total(kg):</label>
+                <input required autocomplete="off" class="form-control format-number" type="number" name="peso_total" id="pesoTotal" placeholder="Peso total" step="0.01">
             </div>
             <div class="col-md-6 mb-3">
                 <label for="volumesTotal">Total de volumes:</label>
