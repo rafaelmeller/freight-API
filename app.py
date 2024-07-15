@@ -3,17 +3,9 @@ import requests
 import os
 import json
 import base64
+from dotenv import load_dotenv
 
-user1 = os.environ.get('API_USERNAME')
-pass1 = os.environ.get('API_PASSWORD')
-
-'''
-user2 = os.environ.get('API_USERNAME2')
-pass2 = os.environ.get('API_PASSWORD2')
-'''
-
-credentials = base64.b64encode(f'{user1}:{pass1}'.encode('utf-8')).decode('utf-8')
-headers = {'Authorization': f'Basic {credentials}'}
+load_dotenv()
 
 app = Flask(__name__)
 
@@ -158,15 +150,73 @@ def submit():
     json_string = json.dumps(data, indent=4)
     print("JSON STRING")
     print(json_string)
-    return redirect(url_for('index'))
 
+    user1_braspress = os.environ.get('API_BRASPRESS_USERNAME1')
+    pass1_braspress = os.environ.get('API_BRASPRESS_PASSWORD1')
 
+    #TEST
+    print(user1_braspress)
+    print(pass1_braspress)
+    username = user1_braspress
+    password = pass1_braspress
 
-'''
+    # Isolated for testing purposes
+    '''
+    user2_braspress = os.environ.get('API_BRASPRESS_USERNAME2')
+    pass2_braspress = os.environ.get('API_BRASPRESS_PASSWORD2')
+    credentials_index = request.form['credential_index']
+
+    credentials_list = [
+        {'username': user1_braspress, 'password': pass1_braspress},
+        {'username': user2_braspress, 'password': pass2_braspress}
+    ]
+
+    selected_credentials = credentials_list[int(credentials_index)]
+    username = selected_credentials['username']
+    password = selected_credentials['password']
+    '''
+    credentials = base64.b64encode(f'{username}:{password}'.encode('utf-8')).decode('utf-8')
+    headers = {'Authorization': f'Basic {credentials}'}
+
+    # TEST
+    print(headers)
+    print(credentials)
+
     response = requests.post('https://api.braspress.com/v1/cotacao/calcular/json', json=data, headers=headers)
-    result = response.json()
-    return render_template('result.html', result=result)
-'''
+    
+    if response.status_code == 200:
+        # Assuming JSON response for simplicity. For XML, you'll need an XML parser.
+        result = response.json()
+        json_string = json.dumps(data, indent=4)
+        # Extracting the relevant information from the response
+        id = result.get('id')
+        prazo = result.get('prazo')
+        totalFrete = result.get('totalFrete')
+        # You can now pass these values to your template or handle them as needed
+        return render_template('result.html', id=id, prazo=prazo, totalFrete=totalFrete, json_string=json_string)
+    else:
+        if response.content and 'application/json' in response.headers.get('Content-Type', ''):
+            try:
+                error_response = response.json()  # Attempt to parse JSON
+                statusCode = error_response.get('statusCode')
+                message = error_response.get('message')
+                dateTime = error_response.get('dateTime')
+                errorList = error_response.get('errorList', [])
+            except ValueError:  # Includes json.JSONDecodeError
+                # Fallback if JSON parsing fails
+                statusCode = response.status_code
+                message = "Um erro com a API ocorreu: ValueError. Contate o suporte técnico."
+                dateTime = None
+                errorList = []
+        else:
+            # Handle non-JSON responses or empty bodies
+            statusCode = response.status_code
+            message = "Um erro inesperado ocorreu, contate o suporte técnico."
+            dateTime = None
+            errorList = []
+
+        return render_template('error.html', error_message=message, code=statusCode, dateTime=dateTime, errorList=errorList)
+
 
 if __name__ == '__main__':
     app.run(debug=True)
