@@ -2,10 +2,18 @@ from flask import Flask, redirect, render_template, request, url_for
 import requests
 import os
 import json
+import base64
 
-# isolate for TESTING
-# auth_key = os.environ.get('BRASPRESS_AUTH_KEY')
-# headers = {'Authorization': f'Basic {auth_key}'}   
+user1 = os.environ.get('API_USERNAME')
+pass1 = os.environ.get('API_PASSWORD')
+
+'''
+user2 = os.environ.get('API_USERNAME2')
+pass2 = os.environ.get('API_PASSWORD2')
+'''
+
+credentials = base64.b64encode(f'{user1}:{pass1}'.encode('utf-8')).decode('utf-8')
+headers = {'Authorization': f'Basic {credentials}'}
 
 app = Flask(__name__)
 
@@ -25,68 +33,73 @@ def submit():
     def sanitize_text(input_string):
         for char in [".", "/", "-", " "]:
             input_string = input_string.replace(char, "")
-        return input_string
+        output_string = int(input_string)
+        return output_string
     
-    def sanitize_num(input_string):
+    def sanitize_int(input_string):
         if "," in input_string:
             input_string = input_string.replace(",", ".")
         elif " " in input_string:
-            input_string = input_string.replace(" ", "")   
-        return input_string
+            input_string = input_string.replace(" ", "")
+        output_string = int(input_string)  
+        return output_string
+    
+    def sanitize_float(input_string):
+        if "," in input_string:
+            input_string = input_string.replace(",", ".")
+        elif " " in input_string:
+            input_string = input_string.replace(" ", "")
+        output_string = float(input_string) 
+        formatted_output = round(output_string, 2)
+        return formatted_output
 
     try:
-        cnpj_remetente = int(sanitize_text(request.form['cnpj_remetente']))
+        cnpj_remetente = sanitize_text(request.form['cnpj_remetente'])
     except ValueError:
         return error("CNPJ do remetente inválido", 400)
     
     try:
-        cnpj_destinatario = int(sanitize_text(request.form['cnpj_destinatario']))
+        cnpj_destinatario = sanitize_text(request.form['cnpj_destinatario'])
     except ValueError:
         return error("CNPJ do destinatário inválido", 400)
     
     modalidade = "R" 
     
     try:
-        cep_origem = int(sanitize_text(request.form['cep_origem']))
+        cep_origem = sanitize_text(request.form['cep_origem'])
     except ValueError:
         return error("CEP de origem inválido", 400)
     
     try:
-        cep_destino = int(sanitize_text(request.form['cep_destino']))
+        cep_destino = sanitize_text(request.form['cep_destino'])
     except ValueError:
         return error("CEP de destino inválido", 400)
     
     print("cep_destino") #TEST
 
-    input_frete = sanitize_text(request.form['tipo_frete']).upper()
-    if input_frete == "CIF":
-        tipo_frete = "1"
-    elif input_frete == "FOB":
-        tipo_frete = "2"
-    elif input_frete == "CONSIGNADO":
-        tipo_frete = "3"
-    else:
+    if request.form['tipo_frete'] not in ["1", "2"]:
         return error("Tipo de frete inválido", 400)
     
+    tipo_frete = request.form['tipo_frete']
+    
     print("tipo_frete") #TEST
-    print(f"{input_frete}: {tipo_frete}") #TEST
 
     try:
-        vlr_mercadoria = float(sanitize_num(request.form['vlr_mercadoria']))
+        vlr_mercadoria = sanitize_float(request.form['vlr_mercadoria'])
     except ValueError:
         return error("Valor da mercadoria inválido", 400)
     
     print("vlr_mercadoria") #TEST
 
     try:
-        peso_total = float(sanitize_num(request.form['peso_total']))
+        peso_total = sanitize_float(request.form['peso_total'])
     except ValueError:
         return error("Valor do peso inválido", 400)
     
     print("peso_total") #TEST
 
     try:
-        volumes_total = int(sanitize_num(request.form['volumes_total']))
+        volumes_total = sanitize_int(request.form['volumes_total'])
     except ValueError:
         return error("Total de volumes inválido", 400)
 
@@ -116,10 +129,10 @@ def submit():
 
         
         
-        altura = float(sanitize_num(request.form[altura_key]))
-        largura = float(sanitize_num(request.form[largura_key]))
-        comprimento = float(sanitize_num(request.form[comprimento_key]))
-        volumes = int(sanitize_num(request.form[volumes_key]))
+        altura = sanitize_float(request.form[altura_key])
+        largura = sanitize_float(request.form[largura_key])
+        comprimento = sanitize_float(request.form[comprimento_key])
+        volumes = sanitize_int(request.form[volumes_key])
 
         # Store the volume group data
         cubagem.append({
@@ -149,11 +162,11 @@ def submit():
 
 
 
-
-    # Isolated for TESTING
-    # response = requests.post('https://api.braspress.com/v1/cotacao/calcular/json', json=data, headers=headers)
-    # result = response.json()
-    # return render_template('result.html', result=result)
+'''
+    response = requests.post('https://api.braspress.com/v1/cotacao/calcular/json', json=data, headers=headers)
+    result = response.json()
+    return render_template('result.html', result=result)
+'''
 
 if __name__ == '__main__':
     app.run(debug=True)
