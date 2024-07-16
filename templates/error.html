@@ -6,4 +6,15 @@
     <div class="container-imagem">
         <img alt="Erro {{ code }}" class="border img-fluid" src="static/error_icon.png" title="Erro {{ code }}">
     </div>
+    {% if errorList %}
+    <div class="error-list">
+        <p class="text-center">Data e Hora do Erro: {{ dateTime }}</p>
+        <h6>Detalhes:</h6>
+        <ul>
+            {% for error in errorList %}
+            <li>{{ error }}</li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
 {% endblock %}

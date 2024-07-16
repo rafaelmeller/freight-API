@@ -2,5 +2,14 @@
 {% block title %}Resultado da cotação{% endblock %}
 {% block header %}Resultado da cotação{% endblock %}
 {% block main %}
-    <div>{{ result }}</div>
+    <div class="api-response">
+        <h2>Detalhes da Cotação</h2>
+        <p><strong>ID:</strong> {{ id }}</p>
+        <p><strong>Prazo:</strong> {{ prazo }} dias</p>
+        <p><strong>Total do Frete:</strong> R$ {{ totalFrete }}</p>
+    </div>
+    <div class="json-response">
+        <h2>Informações utilizadas para cotação:</h2>
+        <pre>{{ json_string | safe }}</pre>
+    </div>
 {% endblock %}
