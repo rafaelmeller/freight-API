@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Submit Data</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<body>
+    <!-- Debug: Directly output data_json to see its content -->
+    <pre>{{ data_json }}</pre>
+
+    <script src="{{ url_for('static', filename='submit.js') }}"></script>
+    <script>
+        try {
+            // Since `{{ data_json | tojson | safe }}` produces a JSON string,
+            // and `safe` marks it as safe, you can directly assign it to `data`.
+            var data = '{{ data_json | safe }}';
+            var credentials = "{{ credentials | safe }}";
+            // Initialize the API call with the data and credentials
+            initApiCall(data, credentials);
+        } catch (e) {
+            console.error("Error passing data, credentials or with the initApiCall() function:", e);
+        }
+    </script>
+</body>
+</html>

@@ -1,5 +1,6 @@
-from flask import Flask, redirect, render_template, request, url_for
+from flask import Flask, jsonify, render_template, request, url_for
 import requests
+from requests.auth import HTTPBasicAuth
 import os
 import json
 import base64
@@ -119,8 +120,6 @@ def submit():
         volumes_key = f'volumes{i}'
         print(volumes_key) #TEST
 
-        
-        
         altura = sanitize_float(request.form[altura_key])
         largura = sanitize_float(request.form[largura_key])
         comprimento = sanitize_float(request.form[comprimento_key])
@@ -146,21 +145,15 @@ def submit():
             "volumes": volumes_total,
             "cubagem": cubagem
     }
-    # TEST
-    json_string = json.dumps(data, indent=4)
-    print("JSON STRING")
-    print(json_string)
-
+    
     user1_braspress = os.environ.get('API_BRASPRESS_USERNAME1')
     pass1_braspress = os.environ.get('API_BRASPRESS_PASSWORD1')
 
     #TEST
-    print(user1_braspress)
-    print(pass1_braspress)
     username = user1_braspress
     password = pass1_braspress
 
-    # Isolated for testing purposes
+    # Isolated for testing purposes, will be developed further
     '''
     user2_braspress = os.environ.get('API_BRASPRESS_USERNAME2')
     pass2_braspress = os.environ.get('API_BRASPRESS_PASSWORD2')
@@ -176,47 +169,70 @@ def submit():
     password = selected_credentials['password']
     '''
     credentials = base64.b64encode(f'{username}:{password}'.encode('utf-8')).decode('utf-8')
-    headers = {'Authorization': f'Basic {credentials}'}
+    data_json = json.dumps(data)
+
+    #TEST
+    print("JSON STRING")
+    print(data_json)
 
     # TEST
-    print(headers)
     print(credentials)
 
-    response = requests.post('https://api.braspress.com/v1/cotacao/calcular/json', json=data, headers=headers)
+    return render_template('submit.html', data_json=data_json, credentials=credentials)
+
+@app.route('/api/response', methods=['POST'])
+def handle_response():
+
+    #TEST
+    print("response handling working")
+
+    # Retrieve "result" (witch is the response of the API request) from the JSON response
+    result = request.json.get('result')
+    id = result.get('id')
+    prazo = result.get('prazo')
+    totalFrete = result.get('totalFrete')
+
+    # Retrieve "data" from the JSON response so the user can double-check the data sent
+    data_string = request.json.get('data')
+    data = json.loads(data_string)
+    json_string = json.dumps(data, indent=4)
+
+    # Get the data from "data" individually if needed
+    """
+    cnpjRemetente = data_dict.get('cnpjRemetente')
+    cnpjDestinatario = data_dict.get('cnpjDestinatario')
+    (...)
+    cubagem_list = data_dict.get('cubagem')
+    for cubagem in cubagem_list:
+        altura = cubagem.get('altura')
+        largura = cubagem.get('largura')
+    """
     
-    if response.status_code == 200:
-        # Assuming JSON response for simplicity. For XML, you'll need an XML parser.
-        result = response.json()
-        json_string = json.dumps(data, indent=4)
-        # Extracting the relevant information from the response
-        id = result.get('id')
-        prazo = result.get('prazo')
-        totalFrete = result.get('totalFrete')
-        # You can now pass these values to your template or handle them as needed
-        return render_template('result.html', id=id, prazo=prazo, totalFrete=totalFrete, json_string=json_string)
-    else:
-        if response.content and 'application/json' in response.headers.get('Content-Type', ''):
-            try:
-                error_response = response.json()  # Attempt to parse JSON
-                statusCode = error_response.get('statusCode')
-                message = error_response.get('message')
-                dateTime = error_response.get('dateTime')
-                errorList = error_response.get('errorList', [])
-            except ValueError:  # Includes json.JSONDecodeError
-                # Fallback if JSON parsing fails
-                statusCode = response.status_code
-                message = "Um erro com a API ocorreu: ValueError. Contate o suporte técnico."
-                dateTime = None
-                errorList = []
-        else:
-            # Handle non-JSON responses or empty bodies
-            statusCode = response.status_code
-            message = "Um erro inesperado ocorreu, contate o suporte técnico."
-            dateTime = None
-            errorList = []
+    #TEST
+    print(id, prazo, totalFrete)
+    print(json_string)
+    
+    # Pass these values to your template or handle them as needed
+    return render_template('result.html', id=id, prazo=prazo, totalFrete=totalFrete, json_string=json_string)
 
-        return render_template('error.html', error_message=message, code=statusCode, dateTime=dateTime, errorList=errorList)
+@app.route('/api/error', methods=['POST'])
+def handle_error():
+    
+    #TEST
+    print("error handling working")
 
+    error_data = request.json
+    if not error_data:
+        print("No JSON data received")
+    # Assuming the error data format includes statusCode, message, dateTime, and errorList
+    statusCode = error_data.get('status')
+    message = error_data.get('statusText')
+    responseText = error_data.get('responseText')
 
+    #TEST
+    print(statusCode, message, responseText)
+
+    # Pass these values to your template or handle them as needed
+    return render_template('error.html', error_message=message, code=statusCode, responseText=responseText)
 if __name__ == '__main__':
     app.run(debug=True)
