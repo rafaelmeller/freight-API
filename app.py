@@ -180,22 +180,24 @@ def submit():
 
     return render_template('submit.html', data_json=data_json, credentials=credentials)
 
-@app.route('/api/response', methods=['POST'])
+@app.route('/api/response', methods=['GET'])
 def handle_response():
 
     #TEST
     print("response handling working")
 
     # Retrieve "result" (witch is the response of the API request) from the JSON response
-    result = request.json.get('result')
+    result_string = request.args.get('var1')
+    result = json.loads(result_string)
+    print("Result:", result)
     id = result.get('id')
     prazo = result.get('prazo')
     totalFrete = result.get('totalFrete')
 
     # Retrieve "data" from the JSON response so the user can double-check the data sent
-    data_string = request.json.get('data')
+    data_string = request.args.get('var2')
     data = json.loads(data_string)
-    json_string = json.dumps(data, indent=4)
+    print("Data:", data)
 
     # Get the data from "data" individually if needed
     """
@@ -208,12 +210,8 @@ def handle_response():
         largura = cubagem.get('largura')
     """
     
-    #TEST
-    print(id, prazo, totalFrete)
-    print(json_string)
-    
     # Pass these values to your template or handle them as needed
-    return render_template('result.html', id=id, prazo=prazo, totalFrete=totalFrete, json_string=json_string)
+    return render_template('result.html', id=id, prazo=prazo, totalFrete=totalFrete, data=data)
 
 @app.route('/api/error', methods=['POST'])
 def handle_error():
