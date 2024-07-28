@@ -17,22 +17,11 @@ function initApiCall(data, credentials) {
         'Authorization': 'Basic ' + credentials,
         },
         success: function (result) {
-            // Send the result to the Flask app
-            $.ajax({
-                type: 'POST',
-                url: '/api/response', // Flask route for handling successful responses
-                data: JSON.stringify({
-                    result: result,
-                    data: data
-                }),
-                contentType: 'application/json; charset=utf-8',
-                success: function () {
-                    console.log('Response data sent to Flask app successfully.');
-                },
-                error: function () {
-                    console.log('Failed to send response data to Flask app.');
-                }
-            });
+            console.log('API call successful.');
+            // Send the result to the Flask app and set the values of the hidden form fields
+            var resultString = JSON.stringify(result);
+            var dataString = data;
+            window.location.href = "/api/response?var1=" + resultString + "&var2=" + dataString;
         },
         error: function (req, status, error) {
             console.log(req);

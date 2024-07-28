@@ -5,14 +5,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initialize the form
     updateVolumeFields();
-    
+        
     // Ensure the total is correct after the initial volume group is added
     updateVolumesTotal();
 
     // Attach the validateAndSubmitForm function to the form's submit event
     document.getElementById('mainForm').addEventListener('submit', validateAndSubmitForm);
-
 });
+
 
 let volumeGroupIds = [];
 let volumeGroupIdCounter = 1;
@@ -116,7 +116,7 @@ document.addEventListener('blur', function(event) {
 function validateAndSubmitForm(event) {
     event.preventDefault(); // Prevent form submission
     let allFilled = true;
-    document.querySelectorAll('#mainForm input').forEach(function(input) {
+    document.querySelectorAll('#mainForm input.form-control').forEach(function(input) {
         if (input.value === '') {
             allFilled = false;
         }
@@ -124,9 +124,15 @@ function validateAndSubmitForm(event) {
 
     if (allFilled) {
         // Form is valid, proceed with submission
-        document.getElementById('volumeGroupIds').value = volumeGroupIds.join(','); // Set the value of the hidden input field as a string of volumeGroupIds
+        const volumeGroupIdsInput = document.getElementById('volumeGroupIds');
+        if (volumeGroupIdsInput) { // Check if the volumeGroupIds input exists
+            volumeGroupIdsInput.value = volumeGroupIds.join(','); // Set the value
+        }
 
-        document.getElementById('mainForm').submit(); // This submits the form
+        const mainForm = document.getElementById('mainForm');
+        if (mainForm) { // Check if the mainForm exists before submitting
+            mainForm.submit(); // This submits the form
+        }
     } else {
         alert('Por favor, preencha todos os campos obrigatórios.');
     }
@@ -134,11 +140,14 @@ function validateAndSubmitForm(event) {
 
 function updateSubmitButtonState() {
     let allFilled = true;
-    document.querySelectorAll('#mainForm input').forEach(function(input) {
+    document.querySelectorAll('#mainForm input.form-control').forEach(function(input) {
         if (input.value === '') {
             allFilled = false;
         }
     });
 
-    document.getElementById('submitButton').disabled = !allFilled;
+    const submitButton = document.getElementById('submitButton');
+    if (submitButton) { // Check if the submitButton exists
+        submitButton.disabled = !allFilled;
+    }
 }
