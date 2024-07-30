@@ -3,13 +3,37 @@
 {% block header %}Resultado da cotação{% endblock %}
 {% block main %}
     <div class="api-response">
-        <h2>Detalhes da Cotação</h2>
+        <h4>Cotação Braspress:</h2>
         <p><strong>ID:</strong> {{ id }}</p>
         <p><strong>Prazo:</strong> {{ prazo }} dias</p>
         <p><strong>Total do Frete:</strong> R$ {{ totalFrete }}</p>
     </div>
     <div class="json-response">
-        <h2>Informações utilizadas para cotação:</h2>
-        <pre>{{ json_string | safe }}</pre>
+        <h4>Informações utilizadas para cotação:</h2>
+        <div>
+            <p><strong>CNPJ Remetente:</strong> {{ data.cnpjRemetente }}</p>
+            <p><strong>CNPJ Destinatário:</strong> {{ data.cnpjDestinatario }}</p>
+            <p><strong>Modal:</strong> {{ data.modal }}</p>
+            <p><strong>Tipo de Frete:</strong> {{ data.tipoFrete }} - 
+                {% if data.tipoFrete == "1" %}
+                    CIF
+                {% elif data.tipoFrete == "2" %}
+                    FOB
+                {% endif %}
+                </p>
+            <p><strong>CEP Origem:</strong> {{ data.cepOrigem }}</p>
+            <p><strong>CEP Destino:</strong> {{ data.cepDestino }}</p>
+            <p><strong>Valor da Mercadoria:</strong> R$ {{ "%.2f"|format(data.vlrMercadoria|float) }}</p>
+            <p><strong>Peso:</strong> {{ data.peso }} kg</p>
+            <p><strong>Total de volumes:</strong> {{ data.volumes }}</p>
+            <h6><strong>Cubagem dos volumes:</strong></h3>
+            <ul class="no-list-style"></ul>
+                {% for cubagem in data.cubagem %}
+                    <li>
+                        Altura: {{ cubagem.altura }} m, Largura: {{ cubagem.largura }} m, Comprimento: {{ cubagem.comprimento }} m, Volumes: {{ cubagem.volumes }}
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
     </div>
 {% endblock %}

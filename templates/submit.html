@@ -1,18 +1,22 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Submit Data</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link href="/static/styles.css" rel="stylesheet">
 </head>
 <body>
-    <!-- Debug: Directly output data_json to see its content -->
-    <pre>{{ data_json }}</pre>
-
+    <main class="container-fluid py-5 text-center">
+        <div class="header-block">
+            <h3>GERANDO RESULTADO...</h3>
+        </div>
+        <div class="loader"></div>
+    </main>
     <script src="{{ url_for('static', filename='submit.js') }}"></script>
     <script>
         try {
-            // Since `{{ data_json | tojson | safe }}` produces a JSON string,
-            // and `safe` marks it as safe, you can directly assign it to `data`.
+            // Get the data and credentials from the server
             var data = '{{ data_json | safe }}';
             var credentials = "{{ credentials | safe }}";
             // Initialize the API call with the data and credentials
