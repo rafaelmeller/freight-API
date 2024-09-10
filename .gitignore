@@ -2,9 +2,5 @@
 TODO.txt
 venv/
 __pycache__/
-test_correios.py
-testBraspress.js
-test.html
-original.py
 templates/testing.html
-test_braspress.py
+temporary tests/

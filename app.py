@@ -1,14 +1,64 @@
-from flask import Flask, jsonify, render_template, request, url_for
+from flask import Flask, jsonify, render_template, request
 import requests
 from requests.auth import HTTPBasicAuth
 import os
 import json
 import base64
 from dotenv import load_dotenv
+import httpx
+import asyncio
 
 load_dotenv()
 
 app = Flask(__name__)
+
+# Braspress credentials, headers and URL
+braspress_username = os.environ.get('BRASPRESS_USERNAME_1')
+braspress_password = os.environ.get('BRASPRESS_PASSWORD_1')
+braspress_credentials = base64.b64encode(f'{braspress_username}:{braspress_password}'.encode('utf-8')).decode('utf-8')
+
+# TEST
+print(braspress_credentials)
+
+braspress_headers = {
+    'Authorization': f'Basic {braspress_credentials}',
+    'Content-Type': 'application/json; charset=utf-8',
+    'Accept': 'application/json',
+}
+
+braspress_url = "https://api.braspress.com/v1/cotacao/calcular/json"
+
+# Patrus credentials and headers
+
+
+patrus_url = "https://api-patrus.azure-api.net/api/v1/logistica/comercial/cotacoes/online"
+
+# Paulineris credentials and headers
+
+
+# Data sanitizing functions
+def sanitize_text(input_string):
+        for char in [".", "/", "-", " "]:
+            input_string = input_string.replace(char, "")
+        output_string = int(input_string)
+        return output_string
+    
+def sanitize_int(input_string):
+    if "," in input_string:
+        input_string = input_string.replace(",", ".")
+    elif " " in input_string:
+        input_string = input_string.replace(" ", "")
+    output_string = int(input_string)  
+    return output_string
+    
+def sanitize_float(input_string):
+    if "," in input_string:
+        input_string = input_string.replace(",", ".")
+    elif " " in input_string:
+        input_string = input_string.replace(" ", "")
+    output_string = float(input_string) 
+    formatted_output = round(output_string, 2)
+    return formatted_output
 
 @app.route('/')
 def index():
@@ -19,32 +69,9 @@ def error(error_message, code):
     return render_template('error.html', error_message=error_message, code=code)
 
 @app.route('/submit', methods=['POST'])
-def submit():
+async def submit():
     # TEST
     print("submission working")
-
-    def sanitize_text(input_string):
-        for char in [".", "/", "-", " "]:
-            input_string = input_string.replace(char, "")
-        output_string = int(input_string)
-        return output_string
-    
-    def sanitize_int(input_string):
-        if "," in input_string:
-            input_string = input_string.replace(",", ".")
-        elif " " in input_string:
-            input_string = input_string.replace(" ", "")
-        output_string = int(input_string)  
-        return output_string
-    
-    def sanitize_float(input_string):
-        if "," in input_string:
-            input_string = input_string.replace(",", ".")
-        elif " " in input_string:
-            input_string = input_string.replace(" ", "")
-        output_string = float(input_string) 
-        formatted_output = round(output_string, 2)
-        return formatted_output
 
     try:
         cnpj_remetente = sanitize_text(request.form['cnpj_remetente'])
@@ -100,7 +127,7 @@ def submit():
 
     cubagem = []
 
-    print("main forms succesful") #TEST 
+    print("main forms succesfull") #TEST 
     
     print(request.form['volumeGroupIds']) #TEST
 
@@ -109,7 +136,7 @@ def submit():
     print(volume_group_ids) #TEST
     print(request.form) #TEST
 
-        # Dynamically handle volume groups
+        # Dynamically handling volume groups
     for i in volume_group_ids:
         altura_key = f'altura{i}'
         print(altura_key) #TEST
@@ -146,40 +173,41 @@ def submit():
             "cubagem": cubagem
     }
     
-    user1_braspress = os.environ.get('API_BRASPRESS_USERNAME1')
-    pass1_braspress = os.environ.get('API_BRASPRESS_PASSWORD1')
+    braspress_data = json.dumps(data)
 
     #TEST
-    username = user1_braspress
-    password = pass1_braspress
+    print("BRASPRESS JSON")
+    print(braspress_data)
 
-    # Isolated for testing purposes, will be developed further
+    async with httpx.AsyncClient() as client:
+        tasks = [
+            client.post(braspress_url, json=braspress_data, headers=braspress_headers),
+            # client.post(patrus_url, json=data, headers=patrus_headers),
+            # client.post( , json=data, headers= )
+        ]
+        responses = await asyncio.gather(*tasks, return_exceptions=True)
+
+    results = []
+    errors = []
+    for response in responses:
+        if isinstance(response, Exception):
+            errors.append(str(response))
+        else:
+            results.append(response.json())
+
+    # TO BE FIXED
     '''
-    user2_braspress = os.environ.get('API_BRASPRESS_USERNAME2')
-    pass2_braspress = os.environ.get('API_BRASPRESS_PASSWORD2')
-    credentials_index = request.form['credential_index']
-
-    credentials_list = [
-        {'username': user1_braspress, 'password': pass1_braspress},
-        {'username': user2_braspress, 'password': pass2_braspress}
-    ]
-
-    selected_credentials = credentials_list[int(credentials_index)]
-    username = selected_credentials['username']
-    password = selected_credentials['password']
+    print("Result:", results)
+    id = response.get('id')
+    prazo = response.get('prazo')
+    totalFrete = response.get('totalFrete')
     '''
-    credentials = base64.b64encode(f'{username}:{password}'.encode('utf-8')).decode('utf-8')
-    data_json = json.dumps(data)
 
-    #TEST
-    print("JSON STRING")
-    print(data_json)
+    return render_template('result.html', results=results, errors=errors)
 
-    # TEST
-    print(credentials)
 
-    return render_template('submit.html', data_json=data_json, credentials=credentials)
-
+# TO BE FIXED
+'''
 @app.route('/api/response', methods=['GET'])
 def handle_response():
 
@@ -189,10 +217,7 @@ def handle_response():
     # Retrieve "result" (witch is the response of the API request) from the JSON response
     result_string = request.args.get('var1')
     result = json.loads(result_string)
-    print("Result:", result)
-    id = result.get('id')
-    prazo = result.get('prazo')
-    totalFrete = result.get('totalFrete')
+   
 
     # Retrieve "data" from the JSON response so the user can double-check the data sent
     data_string = request.args.get('var2')
@@ -210,27 +235,9 @@ def handle_response():
         largura = cubagem.get('largura')
     """
     
-    # Pass these values to your template or handle them as needed
+    # Previous way of handling the response
     return render_template('result.html', id=id, prazo=prazo, totalFrete=totalFrete, data=data)
+'''
 
-@app.route('/api/error', methods=['POST'])
-def handle_error():
-    
-    #TEST
-    print("error handling working")
-
-    error_data = request.json
-    if not error_data:
-        print("No JSON data received")
-    # Assuming the error data format includes statusCode, message, dateTime, and errorList
-    statusCode = error_data.get('status')
-    message = error_data.get('statusText')
-    responseText = error_data.get('responseText')
-
-    #TEST
-    print(statusCode, message, responseText)
-
-    # Pass these values to your template or handle them as needed
-    return render_template('error.html', error_message=message, code=statusCode, responseText=responseText)
 if __name__ == '__main__':
     app.run(debug=True)
