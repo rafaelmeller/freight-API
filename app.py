@@ -1,5 +1,5 @@
-from flask import Flask, jsonify, render_template, request
-import requests
+from flask import Flask, render_template, request
+import requests                                         # Uninstall after testing
 from requests.auth import HTTPBasicAuth
 import os
 import json
@@ -12,28 +12,28 @@ load_dotenv()
 
 app = Flask(__name__)
 
-# Braspress credentials, headers and URL
-braspress_username = os.environ.get('BRASPRESS_USERNAME_1')
-braspress_password = os.environ.get('BRASPRESS_PASSWORD_1')
-braspress_credentials = base64.b64encode(f'{braspress_username}:{braspress_password}'.encode('utf-8')).decode('utf-8')
+# BRASPRESS CREDENTIALS, HEADERS AND URL
+BRASPRESS_USERNAME = os.environ.get('BRASPRESS_USERNAME_1')
+BRASPRESS_PASSWORD = os.environ.get('BRASPRESS_PASSWORD_1')
+BRASPRESS_CREDENTIALS = base64.b64encode(f'{BRASPRESS_USERNAME}:{BRASPRESS_PASSWORD}'.encode('utf-8')).decode('utf-8')
 
 # TEST
-print(braspress_credentials)
+print(BRASPRESS_CREDENTIALS)
 
-braspress_headers = {
-    'Authorization': f'Basic {braspress_credentials}',
+BRASPRESS_HEADERS = {
+    'Authorization': f'Basic {BRASPRESS_CREDENTIALS}',
     'Content-Type': 'application/json; charset=utf-8',
     'Accept': 'application/json',
 }
 
-braspress_url = "https://api.braspress.com/v1/cotacao/calcular/json"
+BRASPRESS_URL = "https://api.braspress.com/v1/cotacao/calcular/json"
 
-# Patrus credentials and headers
+# PATRUS CREDENTIALS, HEADERS AND URL
 
 
-patrus_url = "https://api-patrus.azure-api.net/api/v1/logistica/comercial/cotacoes/online"
+PATRUS_URL = "https://api-patrus.azure-api.net/api/v1/logistica/comercial/cotacoes/online"
 
-# Paulineris credentials and headers
+# PAULINERIS CREDENTIALS, HEADERS AND URL
 
 
 # Data sanitizing functions
@@ -181,63 +181,37 @@ async def submit():
 
     async with httpx.AsyncClient() as client:
         tasks = [
-            client.post(braspress_url, json=braspress_data, headers=braspress_headers),
-            # client.post(patrus_url, json=data, headers=patrus_headers),
+            client.post(BRASPRESS_URL, json=braspress_data, headers=BRASPRESS_HEADERS),
+            # client.post(PATRUS_URL, json=patrus_data, headers=PATRUS_HEADERS),
             # client.post( , json=data, headers= )
         ]
         responses = await asyncio.gather(*tasks, return_exceptions=True)
 
     results = []
     errors = []
+
+    # TEST
+    print("Response:")
+    
     for response in responses:
+        
+        # TEST
+        print(response)
+
+
         if isinstance(response, Exception):
             errors.append(str(response))
         else:
             results.append(response.json())
 
-    # TO BE FIXED
-    '''
-    print("Result:", results)
-    id = response.get('id')
-    prazo = response.get('prazo')
-    totalFrete = response.get('totalFrete')
-    '''
+    # TEST
+    print("Result:")
+    print(results)
+    print("Errors:")
+    print(errors)
 
-    return render_template('result.html', results=results, errors=errors)
+    return render_template('result.html', results=results, errors=errors, data=braspress_data)
 
-
-# TO BE FIXED
-'''
-@app.route('/api/response', methods=['GET'])
-def handle_response():
-
-    #TEST
-    print("response handling working")
-
-    # Retrieve "result" (witch is the response of the API request) from the JSON response
-    result_string = request.args.get('var1')
-    result = json.loads(result_string)
-   
-
-    # Retrieve "data" from the JSON response so the user can double-check the data sent
-    data_string = request.args.get('var2')
-    data = json.loads(data_string)
-    print("Data:", data)
-
-    # Get the data from "data" individually if needed
-    """
-    cnpjRemetente = data_dict.get('cnpjRemetente')
-    cnpjDestinatario = data_dict.get('cnpjDestinatario')
-    (...)
-    cubagem_list = data_dict.get('cubagem')
-    for cubagem in cubagem_list:
-        altura = cubagem.get('altura')
-        largura = cubagem.get('largura')
-    """
-    
-    # Previous way of handling the response
-    return render_template('result.html', id=id, prazo=prazo, totalFrete=totalFrete, data=data)
-'''
 
 if __name__ == '__main__':
     app.run(debug=True)
