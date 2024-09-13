@@ -1,6 +1,4 @@
 from flask import Flask, render_template, request
-import requests                                         # Uninstall after testing
-from requests.auth import HTTPBasicAuth
 import os
 import json
 import base64
@@ -30,6 +28,9 @@ BRASPRESS_URL = "https://api.braspress.com/v1/cotacao/calcular/json"
 
 # PATRUS CREDENTIALS, HEADERS AND URL
 
+
+
+access_url = "https://api-patrus.azure-api.net/app_services/auth.oauth2.svc/token"
 
 PATRUS_URL = "https://api-patrus.azure-api.net/api/v1/logistica/comercial/cotacoes/online"
 
@@ -160,7 +161,7 @@ async def submit():
             "volumes": volumes
         })
        
-    data = {
+    braspress_data = {
             "cnpjRemetente": cnpj_remetente,
             "cnpjDestinatario": cnpj_destinatario,
             "modal": modalidade,
@@ -173,11 +174,11 @@ async def submit():
             "cubagem": cubagem
     }
     
-    braspress_data = json.dumps(data)
+    data_test = json.dumps(braspress_data)
 
     #TEST
     print("BRASPRESS JSON")
-    print(braspress_data)
+    print(data_test)
 
     async with httpx.AsyncClient() as client:
         tasks = [
@@ -210,7 +211,10 @@ async def submit():
     print("Errors:")
     print(errors)
 
-    return render_template('result.html', results=results, errors=errors, data=braspress_data)
+    data_display = json.loads(braspress_data)
+
+
+    return render_template('result.html', results=results, errors=errors, data=data_display)
 
 
 if __name__ == '__main__':
