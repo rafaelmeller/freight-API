@@ -2,24 +2,28 @@
 {% block title %}Resultado da cotação{% endblock %}
 {% block header %}Resultado da cotação{% endblock %}
 {% block main %}
-    <body class="results-field">
+    <div class="results-field">
         <div class="frame">
             <div class="company-result">
                 <img src="{{ url_for('static', filename='braspress_logo.png') }}" alt="Braspress Logo" class="company-logo">
                 <div class="result-box">
                     {% if results[0] %}
-                        <p>{{ results[0] }}</p>
+                    <div class="additional-info">
+                        <p><strong>ID:</strong> {{ results[0].id }}</p>
+                        <p><strong>Prazo:</strong> {{ results[0].prazo }} dias</p>
+                        <p><strong>Valor do frete:</strong> R$ {{ "%.2f"|format(results[0].totalFrete|float) }}</p>
+                    </div>
                     {% else %}
                         <p>{{ errors[0] }}</p>
                     {% endif %}
                 </div>
             </div>
-            <!--  
+            <!-- 
             <div class="company-result">
-                <img src="{{ url_for('static', filename='patrus_logo.png') }}" alt="Patrus Logo" class="company-logo">
+                <img src="{{ url_for('static', filename='patrus_logo.jpg') }}" alt="Patrus Logo" class="company-logo">
                 <div class="result-box">
                     {% if results[1] %}
-                        <p>{{ results[1] }}</p>
+                        <p>{{ results[1] }}</p
                     {% else %}
                         <p>{{ errors[1] }}</p>
                     {% endif %}
@@ -39,33 +43,55 @@
             </div>
         -->
         </div>
-    </body>
-    <div class="json-response">
+    </div>
+    <div class="quotation-data">
         <h5><strong>Informações utilizadas para cotação:</strong></h5>
-        <div>
-            <p><strong>CNPJ Remetente:</strong> {{ data.cnpjRemetente }}</p>
-            <p><strong>CNPJ Destinatário:</strong> {{ data.cnpjDestinatario }}</p>
-            <p><strong>Modal:</strong> {{ data.modal }}</p>
-            <p><strong>Tipo de Frete:</strong> {{ data.tipoFrete }} - 
-                {% if data.tipoFrete == "1" %}
-                    CIF
-                {% elif data.tipoFrete == "2" %}
-                    FOB
-                {% endif %}
-                </p>
-            <p><strong>CEP Origem:</strong> {{ data.cepOrigem }}</p>
-            <p><strong>CEP Destino:</strong> {{ data.cepDestino }}</p>
-            <p><strong>Valor da Mercadoria:</strong> R$ {{ "%.2f"|format(data.vlrMercadoria|float) }}</p>
-            <p><strong>Peso:</strong> {{ data.peso }} kg</p>
-            <p><strong>Total de volumes:</strong> {{ data.volumes }}</p>
-            <h6><strong>Cubagem dos volumes:</strong></h6>
-            <ul class="no-list-style"></ul>
-                {% for cubagem in data.cubagem %}
-                    <li>
-                        Altura: {{ cubagem.altura }} m, Largura: {{ cubagem.largura }} m, Comprimento: {{ cubagem.comprimento }} m, Volumes: {{ cubagem.volumes }}
-                    </li>
-                {% endfor %}
-            </ul>
-        </div>
+            <table class="quotation-table">
+                    <tr>
+                        <td><strong>CNPJ Remetente:</strong> {{ data.cnpjRemetente }}</td>
+                        <td><strong>CNPJ Destinatário:</strong> {{ data.cnpjDestinatario }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>CEP Origem:</strong> {{ data.cepOrigem }}</td>
+                        <td><strong>CEP Destino:</strong> {{ data.cepDestino }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Tipo de Frete:</strong> {{ data.tipoFrete }} - 
+                            {% if data.tipoFrete == "1" %}
+                                CIF
+                            {% elif data.tipoFrete == "2" %}
+                                FOB
+                            {% endif %}
+                        </td>
+                        <td><strong>Modalidade:</strong>
+                            {% if data.modal == "R" %}
+                                Rodoviário
+                            {% elif data.modal== "A" %}
+                                Aéreo
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Valor da Mercadoria:</strong> R$ {{ "%.2f"|format(data.vlrMercadoria|float) }}</td>
+                        <td><strong>Peso:</strong> {{ data.peso }} kg</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Total de volumes:</strong> {{ data.volumes }}</td>
+                        <td><strong>Volume cubado:</strong></td>
+            </table>
+        <h6><strong>Cubagem dos volumes:</strong></h6>
+            {% for cubagem in data.cubagem %}
+                <table class="quotation-table cubagem-table">
+                    <tr>
+                        <td class="cubagem-data"><strong>Altura:</strong> {{ cubagem.altura }} m</td>
+                        <td class="cubagem-data"><strong>Largura:</strong> {{ cubagem.largura }} m</td>
+                    </tr>
+                    <tr>
+                        <td cass="cubagem-data"><strong>Comprimento:</strong> {{ cubagem.comprimento }} m</td>
+                        <td class="cubagem-data"><strong>Volumes:</strong> {{ cubagem.volumes }}</td>
+                    </tr>
+                </table>
+            {% endfor %}
+        
     </div>
 {% endblock %}

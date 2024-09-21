@@ -27,10 +27,35 @@ BRASPRESS_HEADERS = {
 BRASPRESS_URL = "https://api.braspress.com/v1/cotacao/calcular/json"
 
 # PATRUS CREDENTIALS, HEADERS AND URL
+PATRUS_USERNAME = os.environ.get('PATRUS_USERNAME')
+PATRUS_PASSWORD = os.environ.get('PATRUS_PASSWORD')
+PATRUS_GRANT_TYPE = 'password'
 
+PATRUS_AUTH_URL = "https://api-patrus.azure-api.net/app_services/auth.oauth2.svc/token"
 
-
-access_url = "https://api-patrus.azure-api.net/app_services/auth.oauth2.svc/token"
+async def get_patrus_access_token():
+    async with httpx.AsyncClient() as client:
+        response = await client.post(
+            PATRUS_AUTH_URL,
+            data={
+                'username': PATRUS_USERNAME,
+                'password': PATRUS_PASSWORD,
+                'grant_type': PATRUS_GRANT_TYPE
+            },
+            headers={
+                'Content-Type': 'multipart/form-data'
+            }
+        )
+        response.raise_for_status()
+        return response.json()['access_token']
+    
+async def get_patrus_headers():
+    access_token = await get_patrus_access_token()
+    return {
+        'Authorization': f'Bearer {access_token}',
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+    }
 
 PATRUS_URL = "https://api-patrus.azure-api.net/api/v1/logistica/comercial/cotacoes/online"
 
@@ -211,10 +236,7 @@ async def submit():
     print("Errors:")
     print(errors)
 
-    data_display = json.loads(braspress_data)
-
-
-    return render_template('result.html', results=results, errors=errors, data=data_display)
+    return render_template('result.html', results=results, errors=errors, data=braspress_data)
 
 
 if __name__ == '__main__':

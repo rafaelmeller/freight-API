@@ -1,8 +1,102 @@
-.container-fluid {
+.layout-main {
     display: flex;
-    justify-content: space-between;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    width: 100%;
+}
+
+.results-field {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    width: 100%;
+}
+
+.additional-info {
+    margin-top: 10px;
+    text-align: left;
+}
+
+.frame {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #e0f7fa;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    text-align: center;
+}
+
+.company-result {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 10px;
+}
+
+.quotation-data {
+    display: flex;
+    flex-direction: column;
     align-items: center;
     width: 100%;
+    margin-top: 20px;
+}
+
+.quotation-data h6 {
+    margin-top: 20px; /* Increase the margin as needed */
+}
+
+.quotation-table {
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
+    align-items: center;
+    border-collapse: collapse;
+    justify-content: center; /* Center the items inside the table */
+    border: 1px solid lightgray; /* Thin gray frame around the table */
+    padding: 10px; /* Padding inside the cubagem table */
+    border-radius: 5px; /* Optional: rounded corners */
+
+}
+
+.quotation-table th, .quotation-table td {
+    padding: 10px;
+    text-align: left;
+}
+
+.quotation-table th {
+    text-align: center;
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+.quotation-table td {
+    width: 50%;
+}
+
+.quotation-table tr {
+    display: flex;
+    justify-content: space-between;
+}
+
+.cubagem-table {
+    border: 1px solid lightgray; /* Thin gray frame around each table */
+    margin-bottom: 20px; /* Space between cubagem tables */
+    padding: 10px; /* Padding inside the cubagem table */
+    border-radius: 5px; /* Optional: rounded corners */
+}
+
+.cubagem-data {
+    width: 50%;
+}
+
+#mainForm {
+    width: 100%;
+    max-width: 800px;
+    margin: 0 auto;
 }
 
 .responsive-logo {
@@ -14,13 +108,20 @@
     margin-left: 0;
 }
 
-.header-block {
-    flex-grow: 2;
+.main-header {
     display: flex;
-    justify-content: center;
-    padding: 1rem;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.logo-container, .header-block, .placeholder-right {
+    flex: 1;
+}
+
+.header-block {
+    text-align: center;
+    font-size: 1.5rem; /* Adjust the size as needed */
     font-weight: bold;
-    font-size: 1.2em;
 }
 
 .button-container {
@@ -33,13 +134,6 @@
     text-align: left;
 }
 
-#mainForm label {
-    font-weight: bold;
-    text-align: left;
-    margin-left: 0;
-    display: block;
-}
-
 .container-imagem {
     display: flex;
     justify-content: center;
@@ -50,35 +144,20 @@ input[readonly] {
     background-color: lightgrey;
 }
 
-/* Loader found in https://css-loaders.com/ */
-.loader {
-    --d:22px;
-    width: 4px;
-    height: 4px;
-    border-radius: 50%;
-    color: #25b09b;
-    box-shadow: 
-      calc(1*var(--d))      calc(0*var(--d))     0 0,
-      calc(0.707*var(--d))  calc(0.707*var(--d)) 0 1px,
-      calc(0*var(--d))      calc(1*var(--d))     0 2px,
-      calc(-0.707*var(--d)) calc(0.707*var(--d)) 0 3px,
-      calc(-1*var(--d))     calc(0*var(--d))     0 4px,
-      calc(-0.707*var(--d)) calc(-0.707*var(--d))0 5px,
-      calc(0*var(--d))      calc(-1*var(--d))    0 6px;
-    animation: l27 1s infinite steps(8);
-  }
-  @keyframes l27 {
-    100% {transform: rotate(1turn)}
-  }
-
-  .no-list-style {
-    list-style-type: none; /* Removes the bullet points */
-    padding: 0; /* Removes padding */
+.no-list-style {
+    list-style-type: none;
+    padding: 0;
 }
 
-.loader-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 60vh;
+.company-logo {
+    width: 100px;
+    height: auto;
+    margin-bottom: 10px;
+}
+
+.result-box {
+    background-color: #edf3f8;
+    color: rgb(0, 0, 0);
+    padding: 10px;
+    border-radius: 5px;
 }
