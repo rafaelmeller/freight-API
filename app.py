@@ -29,7 +29,7 @@ BRASPRESS_URL = "https://api.braspress.com/v1/cotacao/calcular/json"
 # PATRUS CREDENTIALS, HEADERS AND URL
 PATRUS_USERNAME = os.environ.get('PATRUS_USERNAME')
 PATRUS_PASSWORD = os.environ.get('PATRUS_PASSWORD')
-PATRUS_GRANT_TYPE = 'password'
+PATRUS_SUBSCRIPTION = os.environ.get('PATRUS_SUB_TOKEN')
 
 PATRUS_AUTH_URL = "https://api-patrus.azure-api.net/app_services/auth.oauth2.svc/token"
 
@@ -40,29 +40,41 @@ async def get_patrus_access_token():
             data={
                 'username': PATRUS_USERNAME,
                 'password': PATRUS_PASSWORD,
-                'grant_type': PATRUS_GRANT_TYPE
+                'grant_type': 'password'
             },
             headers={
-                'Content-Type': 'multipart/form-data'
-            }
+            'Content-Type': 'application/x-www-form-urlencoded',
+            'Subscription': PATRUS_SUBSCRIPTION
+        }
         )
         response.raise_for_status()
         return response.json()['access_token']
     
 async def get_patrus_headers():
-    access_token = await get_patrus_access_token()
+    try:
+        access_token = await get_patrus_access_token()
+    except httpx.HTTPStatusError as e:
+        print(f"HTTP error occurred: {e}")
+        print(f"Response Content: {e.response.text}")
+        raise
+
     return {
-        'Authorization': f'Bearer {access_token}',
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-    }
+    'Content-Type': 'application/json',
+    'Authorization': f'Bearer {access_token}',
+    'Subscription': PATRUS_SUBSCRIPTION
+}
 
 PATRUS_URL = "https://api-patrus.azure-api.net/api/v1/logistica/comercial/cotacoes/online"
+
+# Constant for cubic weight calculation (used only for Patrus)
+CUBIC_FACTOR = 300
 
 # PAULINERIS CREDENTIALS, HEADERS AND URL
 
 
-# Data sanitizing functions
+# DATA SANITIZING FUNCTIONS
+
+# Used for Braspress API
 def sanitize_text(input_string):
         for char in [".", "/", "-", " "]:
             input_string = input_string.replace(char, "")
@@ -96,28 +108,35 @@ def error(error_message, code):
 
 @app.route('/submit', methods=['POST'])
 async def submit():
+    
+    patrus_headers = await get_patrus_headers()
+    
     # TEST
     print("submission working")
 
     try:
-        cnpj_remetente = sanitize_text(request.form['cnpj_remetente'])
+        cnpj_tomador = request.form['cnpj_remetente']
+        cnpj_remetente = sanitize_text(cnpj_tomador)
     except ValueError:
         return error("CNPJ do remetente inválido", 400)
     
     try:
-        cnpj_destinatario = sanitize_text(request.form['cnpj_destinatario'])
+        cnpj_destino = request.form['cnpj_destinatario']
+        cnpj_destinatario = sanitize_text(cnpj_destino)
     except ValueError:
         return error("CNPJ do destinatário inválido", 400)
     
     modalidade = "R" 
     
     try:
-        cep_origem = sanitize_text(request.form['cep_origem'])
+        cep_origem = request.form['cep_origem']
+        cep_remetente = sanitize_text(cep_origem)
     except ValueError:
         return error("CEP de origem inválido", 400)
     
     try:
-        cep_destino = sanitize_text(request.form['cep_destino'])
+        cep_destino = request.form['cep_destino']
+        cep_destinatario = sanitize_text(cep_destino)
     except ValueError:
         return error("CEP de destino inválido", 400)
     
@@ -162,6 +181,8 @@ async def submit():
     print(volume_group_ids) #TEST
     print(request.form) #TEST
 
+    total_cubic_weight = 0
+
         # Dynamically handling volume groups
     for i in volume_group_ids:
         altura_key = f'altura{i}'
@@ -178,6 +199,10 @@ async def submit():
         comprimento = sanitize_float(request.form[comprimento_key])
         volumes = sanitize_int(request.form[volumes_key])
 
+        # Calculate the cubic weight
+        cubic_weight = (altura * largura * comprimento) * CUBIC_FACTOR * volumes
+        total_cubic_weight += cubic_weight
+
         # Store the volume group data
         cubagem.append({
             "altura": altura,
@@ -191,24 +216,53 @@ async def submit():
             "cnpjDestinatario": cnpj_destinatario,
             "modal": modalidade,
             "tipoFrete": tipo_frete,
-            "cepOrigem": cep_origem,
-            "cepDestino": cep_destino,
+            "cepOrigem": cep_remetente,
+            "cepDestino": cep_destinatario,
             "vlrMercadoria": vlr_mercadoria,
             "peso": peso_total,
             "volumes": volumes_total,
             "cubagem": cubagem
     }
     
-    data_test = json.dumps(braspress_data)
+    patrus_data = {
+        "CnpjTomador": cnpj_tomador,
+        "CepDestino": cep_destino,
+        "CnpjCpf": cnpj_destino,
+        "Carga": {
+            "Volumes": volumes_total,
+            "Peso": peso_total,
+            "PesoCubado": total_cubic_weight,
+            "ValorMercadoria": vlr_mercadoria
+        },
+    }
+
+    main_data = {
+        "cnpjRemetente": cnpj_tomador,
+            "cnpjDestinatario": cnpj_destino,
+            "modal": modalidade,
+            "tipoFrete": tipo_frete,
+            "cepOrigem": cep_origem,
+            "cepDestino": cep_destino,
+            "vlrMercadoria": vlr_mercadoria,
+            "peso": peso_total,
+            "volumes": volumes_total,
+            "pesoCubado": total_cubic_weight,
+            "cubagem": cubagem
+    }
+
+    data_test1 = json.dumps(braspress_data)
+    data_test2 = json.dumps(patrus_data)
 
     #TEST
     print("BRASPRESS JSON")
-    print(data_test)
+    print(data_test1)
+    print("PATRUS JSON")
+    print(data_test2)
 
     async with httpx.AsyncClient() as client:
         tasks = [
             client.post(BRASPRESS_URL, json=braspress_data, headers=BRASPRESS_HEADERS),
-            # client.post(PATRUS_URL, json=patrus_data, headers=PATRUS_HEADERS),
+            client.post(PATRUS_URL, json=patrus_data, headers=patrus_headers, timeout=30.0),
             # client.post( , json=data, headers= )
         ]
         responses = await asyncio.gather(*tasks, return_exceptions=True)
@@ -228,7 +282,14 @@ async def submit():
         if isinstance(response, Exception):
             errors.append(str(response))
         else:
-            results.append(response.json())
+            try:
+                response.raise_for_status()
+                results.append(response.json())
+            except httpx.ReadTimeout:
+                errors.append("The read operation timed out")
+            except httpx.HTTPStatusError as e:
+                errors.append(f"HTTP error occurred: {e}")
+                errors.append(f"Response Content: {e.response.text}")
 
     # TEST
     print("Result:")
@@ -236,7 +297,7 @@ async def submit():
     print("Errors:")
     print(errors)
 
-    return render_template('result.html', results=results, errors=errors, data=braspress_data)
+    return render_template('result.html', results=results, errors=errors, data=main_data)
 
 
 if __name__ == '__main__':
