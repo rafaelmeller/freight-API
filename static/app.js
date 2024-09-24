@@ -11,11 +11,51 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Attach the validateAndSubmitForm function to the form's submit event
     document.getElementById('mainForm').addEventListener('submit', validateAndSubmitForm);
+
+    // Attach the formatCNPJCPF function to the CNPJ input fields
+    document.getElementById('cnpjRemetente').addEventListener('input', formatCNPJCPF);
+    document.getElementById('cnpjDestinatario').addEventListener('input', formatCNPJCPF);
+
+    // Attach the formatCEP function to the CEP input fields
+    document.getElementById('cepOrigem').addEventListener('input', formatCEP);
+    document.getElementById('cepDestino').addEventListener('input', formatCEP);
 });
 
 
 let volumeGroupIds = [];
 let volumeGroupIdCounter = 1;
+
+function formatCNPJCPF(event) {
+    const input = event.target;
+    let value = input.value.replace(/\D/g, ''); // Remove all non-digit characters
+
+    if (value.length <= 11) {
+        // Format as CPF (XXX.XXX.XXX-XX)
+        value = value.replace(/(\d{3})(\d)/, '$1.$2');
+        value = value.replace(/(\d{3})(\d)/, '$1.$2');
+        value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
+    } else if (value.length <= 14) {
+        // Format as CNPJ (XX.XXX.XXX/XXXX-XX)
+        value = value.replace(/(\d{2})(\d)/, '$1.$2');
+        value = value.replace(/(\d{3})(\d)/, '$1.$2');
+        value = value.replace(/(\d{3})(\d)/, '$1/$2');
+        value = value.replace(/(\d{4})(\d{1,2})$/, '$1-$2');
+    }
+
+    input.value = value;
+}
+
+function formatCEP(event) {
+    const input = event.target;
+    let value = input.value.replace(/\D/g, ''); // Remove all non-digit characters
+
+    if (value.length <= 8) {
+        // Format as CEP (XXXXX-XXX)
+        value = value.replace(/(\d{5})(\d{3})$/, '$1-$2');
+    }
+
+    input.value = value;
+}
 
 function updateVolumeFields() {
     // Clear existing volume fields and reset counter
