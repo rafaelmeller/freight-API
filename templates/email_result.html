@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resultado da Cotação</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        .results-field {
+            margin: 20px;
+        }
+        .company-result {
+            margin-bottom: 20px;
+        }
+        .result-box {
+            border: 1px solid #ddd;
+            padding: 10px;
+            margin: 10px;
+        }
+        .additional-info {
+            margin-top: 10px;
+        }
+        .quotation-data {
+            margin-top: 30px;
+        }
+        .quotation-table, .cubagem-table {
+            width: 100%;
+            margin: 10px 0;
+            border-collapse: collapse;
+        }
+        .quotation-row, .cubagem-data {
+            border: 1px solid #ddd;
+            padding: 8px;
+        }
+        .quotation-column {
+            text-align: left;
+        }
+        h5, h6 {
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h2>Resultado da cotação para <strong><u>{{ data.nomeFantasia }}</u></strong></h2>
+    <h5><i>feita no dia {{ date }}</i></h5>
+    <div class="results-field">
+        <div class="company-result">
+            <h3>Braspress</h3>
+            <div class="result-box">
+                {% if results[0] %}
+                    <div class="additional-info">
+                        <p><strong>ID:</strong> {{ results[0].id }}</p>
+                        <p><strong>Prazo:</strong> {{ results[0].prazo }} dias</p>
+                        <p><strong>Valor do frete:</strong> R$ {{ "%.2f"|format(results[0].totalFrete|float) }}</p>
+                    </div>
+                {% else %}
+                    <div class="additional-info">
+                        <p><strong>Código do erro:</strong> {{ errors[0].statusCode }}</p>
+                        <p><strong>Mensagem:</strong> {{ errors[0].message }}</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div> 
+        <div class="company-result">
+            <h3>Patrus</h3>
+            <div class="result-box">
+                {% if header_error %}
+                    <div class="additional-info">
+                        <p><strong>Código do erro:</strong> {{ header_error.statusCode }}</p>
+                        <p><strong>Mensagem:</strong> {{ header_error.message }}</p>
+                    </div>
+                {% else %}
+                    {% if results[1] %}
+                        <div class="additional-info">
+                            <p><strong>Previsão:</strong> {{ format_datetime(results[1].EntregaPrevista) }}</p>
+                            <p><strong>Valor do frete:</strong> R$ {{ "%.2f"|format(results[1].ValorFrete|float) }}</p>
+                        </div>
+                    {% else %}
+                        <div class="additional-info">
+                            <p><strong>Código do erro:</strong> {{ errors[1].statusCode }}</p>
+                            <p><strong>Mensagem:</strong> {{ errors[1].message }}</p>
+                        </div>
+                    {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="quotation-data">
+        <h3>Dados da cotação:</h3>
+        <table class="quotation-table">
+            <tr class="quotation-row">
+                <td class="quotation-column"><strong>CNPJ Remetente:&nbsp;</strong> {{ data.cnpjRemetente }}</td>
+                <td class="quotation-column"><strong>CNPJ Destinatário:&nbsp;</strong> {{ data.cnpjDestinatario }}</td>
+            </tr>
+            <tr class="quotation-row">
+                <td class="quotation-column"><strong>CEP Origem:&nbsp;</strong> {{ data.cepOrigem }}</td>
+                <td class="quotation-column"><strong>CEP Destino:&nbsp;</strong> {{ data.cepDestino }}</td>
+            </tr>
+            <tr class="quotation-row">
+                <td class="quotation-column"><strong>Tipo de Frete:&nbsp;</strong> {{ data.tipoFrete }} - 
+                    {% if data.tipoFrete == "1" %}
+                        CIF
+                    {% elif data.tipoFrete == "2" %}
+                        FOB
+                    {% endif %}
+                </td>
+                <td class="quotation-column"><strong>Modalidade:&nbsp;</strong>
+                    {% if data.modal == "R" %}
+                        Rodoviário
+                    {% elif data.modal== "A" %}
+                        Aéreo
+                    {% endif %}
+                </td>
+            </tr>
+            <tr class="quotation-row">
+                <td class="quotation-column"><strong>Valor da Mercadoria:&nbsp;</strong> R$ {{ "%.2f"|format(data.vlrMercadoria|float) }}</td>
+                <td class="quotation-column"><strong>Peso:&nbsp;</strong> {{ data.peso }} kg</td>
+            </tr>
+            <tr class="quotation-row">
+                <td class="quotation-column"><strong>Total de volumes:&nbsp;</strong> {{ data.volumes }}</td>
+                <td class="quotation-column"><strong>Peso cubado:&nbsp;</strong> {{ data.pesoCubado }} </td>
+            </tr>
+        </table>
+        <h3>Cubagem dos volumes:</h3>
+        {% for cubagem in data.cubagem %}
+            <table class="cubagem-table quotation-table">
+                <tr class="quotation-row">
+                    <td class="cubagem-data quotation-column"><strong>Altura:&nbsp;</strong> {{ cubagem.altura }} m</td>
+                    <td class="cubagem-data quotation-column"><strong>Largura:&nbsp;</strong> {{ cubagem.largura }} m</td>
+                </tr>
+                <tr class="quotation-row">
+                    <td class="cubagem-data quotation-column"><strong>Comprimento:&nbsp;</strong> {{ cubagem.comprimento }} m</td>
+                    <td class="cubagem-data quotation-column"><strong>Volumes (com essa dimensão):&nbsp;</strong> {{ cubagem.volumes }}</td>
+                </tr>
+            </table>
+        {% endfor %}
+    </div>
+</body>
+</html>

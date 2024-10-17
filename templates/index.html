@@ -3,7 +3,13 @@
 {% block header %}Cotação de fretes{% endblock %}
 {% block main %}
     <!-- Form to enter freight details -->
-    <form action="/submit" id="mainForm" method="POST">
+    <form action="{{ url_for('submit') }}" id="mainForm" method="POST">
+        <div class="row">
+            <div class="col-md-12 mb-3">
+            <label for="nomeFantasia">Nome Fantasia do Destinatário:</label>
+            <input required autocomplete="off" autofocus class="form-control" type="text" name="nome_fantasia" id="nomeFantasia" placeholder="Nome Fantasia">
+            </div>
+        </div>
         <div class="row">
             <div class="col-md-6 mb-3">
                 <label for="cnpjRemetente">CNPJ do Remetente:</label>
@@ -11,7 +17,7 @@
             </div>
             <div class="col-md-6 mb-3">
                 <label for="cnpjDestinatario">CNPJ do Destinatário:</label>
-                <input required autocomplete="off" autofocus class="form-control" type="text" name="cnpj_destinatario" id="cnpjDestinatario" placeholder="CNPJ do Destinatário">
+                <input required autocomplete="off" class="form-control" type="text" name="cnpj_destinatario" id="cnpjDestinatario" placeholder="CNPJ do Destinatário">
             </div>
         </div>
         <div class="row">

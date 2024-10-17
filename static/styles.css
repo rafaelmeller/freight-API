@@ -22,13 +22,21 @@
 .frame {
     display: flex;
     flex-direction: row;
-    align-items: center;
+    justify-content: center;
+    align-items: flex-start;
     background-color: #e0f7fa;
     padding: 20px;
     border-radius: 10px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     text-align: center;
     flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+    .frame {
+        flex-direction: column; /* Stack items vertically */
+        align-items: center; /* Center items horizontally */
+    }
 }
 
 .company-result {
@@ -55,33 +63,38 @@
     width: 100%;
     max-width: 800px;
     margin: 0 auto;
-    align-items: center;
     border-collapse: collapse;
-    justify-content: center; /* Center the items inside the table */
-    border: 1px solid lightgray; /* Thin gray frame around the table */
-    padding: 10px; /* Padding inside the cubagem table */
-    border-radius: 5px; /* Optional: rounded corners */
-
-}
-
-.quotation-table th, .quotation-table td {
+    border: 1px solid lightgray;
     padding: 10px;
-    text-align: left;
+    border-radius: 5px;
 }
 
-.quotation-table th {
-    text-align: center;
-    font-weight: bold;
-    font-size: 1.2rem;
-}
-
-.quotation-table td {
-    width: 50%;
-}
-
-.quotation-table tr {
+.quotation-column {
     display: flex;
-    justify-content: space-between;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    width: 50%; /* Each column takes up 50% of the row */
+    padding: 10px;
+}
+
+.quotation-row {
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: flex-start;
+    width: 100%;
+}
+
+@media (max-width: 600px) {
+    .quotation-table {
+        width: 100%;
+    }
+
+    .quotation-table th, .quotation-table td {
+        padding: 5px;
+        font-size: 0.9rem;
+    }
 }
 
 .cubagem-table {
@@ -92,7 +105,12 @@
 }
 
 .cubagem-data {
-    width: 50%;
+    display: flex;
+    flex-direction: row;
+    justify-content: flex-start;
+    align-items: center;
+    width: 50%; /* Each column takes up 50% of the row */
+    padding: 10px;
 }
 
 #mainForm {
@@ -151,9 +169,17 @@ input[readonly] {
     padding: 0;
 }
 
+.image-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
 .company-logo {
     width: 100px;
-    height: auto;
+    height: 100px;
+    object-fit: contain;
     margin-bottom: 10px;
 }
 
@@ -163,4 +189,11 @@ input[readonly] {
     padding: 10px;
     border-radius: 5px;
     margin-bottom: 10px;
+}
+
+.quotation-table-title {
+    text-align: center;
+    width: 100%;
+    font-weight: bold;
+    font-size: 1.2rem;
 }

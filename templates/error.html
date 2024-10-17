@@ -4,8 +4,7 @@
 {% block main %}
     <h5 class="text-center">(Erro {{ code }}): {{ error_message }}</h5>
     <div class="container-imagem">
-        <img alt="Erro {{ code }}" class="border img-fluid" src="static/error_icon.png" title="Erro {{ code }}">
-    </div>
+        <img alt="Erro {{ code }}" class="border img-fluid" src="{{ url_for('static', filename='error_icon.png') }}" title="Erro {{ code }}">    </div>
     {% if errorList %}
     <div class="error-list">
         <p class="text-center">Data e Hora do Erro: {{ dateTime }}</p>

@@ -1,14 +1,26 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, url_for, Blueprint, redirect
 import os
 import json
 import base64
 from dotenv import load_dotenv
 import httpx
 import asyncio
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+from datetime import datetime
 
 load_dotenv()
 
 app = Flask(__name__)
+
+# E-MAIL CREDENTIALS, RECIPIENT AND CONFIGURATION
+SENDER_EMAIL = os.environ.get('SENDER_EMAIL')
+SENDER_PASSWORD = os.environ.get('SENDER_PASSWORD')
+RECIPIENT_EMAIL = os.environ.get('RECIPIENT_EMAIL')
+SMTP_SERVER = "smtp.gmail.com"
+SMTP_PORT = 587
+
 
 # BRASPRESS CREDENTIALS, HEADERS AND URL
 BRASPRESS_USERNAME = os.environ.get('BRASPRESS_USERNAME_1')
@@ -26,12 +38,12 @@ BRASPRESS_HEADERS = {
 
 BRASPRESS_URL = "https://api.braspress.com/v1/cotacao/calcular/json"
 
-# PATRUS CREDENTIALS, HEADERS AND URL
+# PATRUS CREDENTIALS, HEADERS, URL AND FUNCTIONS
 PATRUS_USERNAME = os.environ.get('PATRUS_USERNAME')
 PATRUS_PASSWORD = os.environ.get('PATRUS_PASSWORD')
 PATRUS_SUBSCRIPTION = os.environ.get('PATRUS_SUB_TOKEN')
 
-PATRUS_AUTH_URL = "https://api-patrus.azure-api.net/app_services/auth.oauth2.svc/token"
+PATRUS_AUTH_URL = "https://api-patrus.azure-api.net/security/app_services/auth.oauth2.svc/token"
 
 async def get_patrus_access_token():
     async with httpx.AsyncClient() as client:
@@ -54,27 +66,76 @@ async def get_patrus_headers():
     try:
         access_token = await get_patrus_access_token()
     except httpx.HTTPStatusError as e:
+        header_error = {
+            'statusCode': e.response.status_code,
+            'message': e.response.json().get('message', 'Unknown error')
+        }
         print(f"HTTP error occurred: {e}")
         print(f"Response Content: {e.response.text}")
-        raise
+        return None, header_error
+    except Exception as e:
+        header_error = {
+            'statusCode': 'Unknown',
+            'message': str(e)
+        }
+        return None, header_error
 
-    return {
-    'Content-Type': 'application/json',
-    'Authorization': f'Bearer {access_token}',
-    'Subscription': PATRUS_SUBSCRIPTION
-}
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': f'Bearer {access_token}',
+        'Subscription': PATRUS_SUBSCRIPTION
+    }
+    return headers, None
 
 PATRUS_URL = "https://api-patrus.azure-api.net/api/v1/logistica/comercial/cotacoes/online"
 
-# Constant for cubic weight calculation (used only for Patrus)
-CUBIC_FACTOR = 300
+CUBIC_FACTOR = 300 # Constant for cubic weight calculation (used only for Patrus)
 
 # PAULINERIS CREDENTIALS, HEADERS AND URL
 
 
-# DATA SANITIZING FUNCTIONS
+# FUNCTION FOR SENDING EMAILS
+def send_email(subject, recipient, html_content):
+    sender_email = SENDER_EMAIL
+    sender_password = SENDER_PASSWORD
 
-# Used for Braspress API
+    msg = MIMEMultipart('alternative')
+    msg['Subject'] = subject
+    msg['From'] = sender_email
+    msg['To'] = recipient
+
+    part = MIMEText(html_content, 'html')
+    msg.attach(part)
+
+    try:
+        server = smtplib.SMTP(SMTP_SERVER, SMTP_PORT)
+        server.starttls()
+        server.login(sender_email, sender_password)
+        server.sendmail(sender_email, recipient, msg.as_string())
+        server.quit()
+        print("Email sent successfully")
+    except Exception as e:
+        print(f"Failed to send email: {e}")
+
+
+# DATA SANITIZING FUNCTIONS
+def format_datetime(date_str):
+    # Parse the date string
+    date_obj = datetime.strptime(date_str, "%Y-%m-%dT%H:%M:%S")
+    
+    # Calculate the days left
+    today = datetime.now()
+    days_left = (date_obj - today).days
+    
+    # Format the date as dd/mm/yyyy
+    formatted_date = date_obj.strftime("%d/%m/%Y")
+    
+    # Return the formatted string
+    return f"{formatted_date} ({days_left} dias)"
+
+# Adding format_datetime function to the Jinja environment
+app.jinja_env.globals.update(format_datetime=format_datetime)
+
 def sanitize_text(input_string):
         for char in [".", "/", "-", " "]:
             input_string = input_string.replace(char, "")
@@ -98,7 +159,14 @@ def sanitize_float(input_string):
     formatted_output = round(output_string, 2)
     return formatted_output
 
+# BLUEPRINT SETTING
+# cotacao_bp = Blueprint('cotacao', __name__, url_prefix='/cotacao')
+
 @app.route('/')
+def home():
+    return redirect('/cotacao')
+
+@app.route('/cotacao')
 def index():
     return render_template('index.html')
 
@@ -108,11 +176,22 @@ def error(error_message, code):
 
 @app.route('/submit', methods=['POST'])
 async def submit():
-    
-    patrus_headers = await get_patrus_headers()
-    
     # TEST
     print("submission working")
+    
+    errors = [None, None]  # Add one slot for each API call (Patrus has two)
+    results = [None, None]  # Add one slot for each freight company
+
+    
+    patrus_headers, header_error = await get_patrus_headers()
+    if header_error:
+        patrus_headers = None
+    
+    print("initiating main form handling") #TEST 
+    
+    nome_fantasia = request.form['nome_fantasia']
+    
+    modalidade = "R" 
 
     try:
         cnpj_tomador = request.form['cnpj_remetente']
@@ -126,8 +205,6 @@ async def submit():
     except ValueError:
         return error("CNPJ do destinatário inválido", 400)
     
-    modalidade = "R" 
-    
     try:
         cep_origem = request.form['cep_origem']
         cep_remetente = sanitize_text(cep_origem)
@@ -139,40 +216,30 @@ async def submit():
         cep_destinatario = sanitize_text(cep_destino)
     except ValueError:
         return error("CEP de destino inválido", 400)
-    
-    print("cep_destino") #TEST
 
     if request.form['tipo_frete'] not in ["1", "2"]:
         return error("Tipo de frete inválido", 400)
     
     tipo_frete = request.form['tipo_frete']
     
-    print("tipo_frete") #TEST
-
     try:
         vlr_mercadoria = sanitize_float(request.form['vlr_mercadoria'])
     except ValueError:
         return error("Valor da mercadoria inválido", 400)
     
-    print("vlr_mercadoria") #TEST
-
     try:
         peso_total = sanitize_float(request.form['peso_total'])
     except ValueError:
         return error("Valor do peso inválido", 400)
     
-    print("peso_total") #TEST
-
     try:
         volumes_total = sanitize_int(request.form['volumes_total'])
     except ValueError:
         return error("Total de volumes inválido", 400)
 
-    print("volumes_total") #TEST
-
     cubagem = []
 
-    print("main forms succesfull") #TEST 
+    print("main form handling succesfull") #TEST 
     
     print(request.form['volumeGroupIds']) #TEST
 
@@ -183,7 +250,7 @@ async def submit():
 
     total_cubic_weight = 0
 
-        # Dynamically handling volume groups
+    # Dynamically handling volume groups
     for i in volume_group_ids:
         altura_key = f'altura{i}'
         print(altura_key) #TEST
@@ -212,16 +279,16 @@ async def submit():
         })
        
     braspress_data = {
-            "cnpjRemetente": cnpj_remetente,
-            "cnpjDestinatario": cnpj_destinatario,
-            "modal": modalidade,
-            "tipoFrete": tipo_frete,
-            "cepOrigem": cep_remetente,
-            "cepDestino": cep_destinatario,
-            "vlrMercadoria": vlr_mercadoria,
-            "peso": peso_total,
-            "volumes": volumes_total,
-            "cubagem": cubagem
+        "cnpjRemetente": cnpj_remetente,
+        "cnpjDestinatario": cnpj_destinatario,
+        "modal": modalidade,
+        "tipoFrete": tipo_frete,
+        "cepOrigem": cep_remetente,
+        "cepDestino": cep_destinatario,
+        "vlrMercadoria": vlr_mercadoria,
+        "peso": peso_total,
+        "volumes": volumes_total,
+        "cubagem": cubagem
     }
     
     patrus_data = {
@@ -237,23 +304,23 @@ async def submit():
     }
 
     main_data = {
+        "nomeFantasia": nome_fantasia,
         "cnpjRemetente": cnpj_tomador,
-            "cnpjDestinatario": cnpj_destino,
-            "modal": modalidade,
-            "tipoFrete": tipo_frete,
-            "cepOrigem": cep_origem,
-            "cepDestino": cep_destino,
-            "vlrMercadoria": vlr_mercadoria,
-            "peso": peso_total,
-            "volumes": volumes_total,
-            "pesoCubado": total_cubic_weight,
-            "cubagem": cubagem
+        "cnpjDestinatario": cnpj_destino,
+        "modal": modalidade,
+        "tipoFrete": tipo_frete,
+        "cepOrigem": cep_origem,
+        "cepDestino": cep_destino,
+        "vlrMercadoria": vlr_mercadoria,
+        "peso": peso_total,
+        "volumes": volumes_total,
+        "pesoCubado": total_cubic_weight,
+        "cubagem": cubagem
     }
 
+    #TEST
     data_test1 = json.dumps(braspress_data)
     data_test2 = json.dumps(patrus_data)
-
-    #TEST
     print("BRASPRESS JSON")
     print(data_test1)
     print("PATRUS JSON")
@@ -267,29 +334,27 @@ async def submit():
         ]
         responses = await asyncio.gather(*tasks, return_exceptions=True)
 
-    results = []
-    errors = []
-
     # TEST
     print("Response:")
     
-    for response in responses:
+    for i, response in enumerate(responses):
         
         # TEST
+        print(i)
         print(response)
 
 
         if isinstance(response, Exception):
-            errors.append(str(response))
+            errors[i] = str(response)
         else:
             try:
                 response.raise_for_status()
-                results.append(response.json())
+                results[i] = response.json()
             except httpx.ReadTimeout:
-                errors.append("The read operation timed out")
+                errors[i] = "The read operation timed out"
             except httpx.HTTPStatusError as e:
-                errors.append(f"HTTP error occurred: {e}")
-                errors.append(f"Response Content: {e.response.text}")
+                errors[i] = f"HTTP error occurred: {e}"
+                errors[i] += f"Response Content: {e.response.text}"
 
     # TEST
     print("Result:")
@@ -297,8 +362,23 @@ async def submit():
     print("Errors:")
     print(errors)
 
-    return render_template('result.html', results=results, errors=errors, data=main_data)
+    
+    # SENDING EMAIL
+    date = datetime.now().strftime("%d/%m/%Y às %H:%M")
+    price = f"{vlr_mercadoria:.2f}"
+    subject = f"Cotação para {nome_fantasia} | valor do pedido: R$ {price} | {date}"
+    html_content = render_template('email_result.html', results=results, errors=errors, data=main_data, header_error=header_error, date=date)
 
+    send_email(subject, RECIPIENT_EMAIL, html_content)
+
+    # Verify the loaded recipient e-mail
+    print(f"Recipient Email: {RECIPIENT_EMAIL}")
+    
+
+    return render_template('result.html', results=results, errors=errors, data=main_data, header_error=header_error)
+
+# Register the Blueprint
+# app.register_blueprint(cotacao_bp)
 
 if __name__ == '__main__':
     app.run(debug=True)
