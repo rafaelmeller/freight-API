@@ -9,37 +9,52 @@
             font-family: Arial, sans-serif;
             text-align: center;
         }
+
         .results-field {
             margin: 20px;
         }
+
         .company-result {
             margin-bottom: 20px;
         }
+
         .result-box {
             border: 1px solid #ddd;
             padding: 10px;
             margin: 10px;
         }
+
         .additional-info {
             margin-top: 10px;
         }
+
         .quotation-data {
             margin-top: 30px;
         }
-        .quotation-table, .cubagem-table {
+
+        .table {
             width: 100%;
-            margin: 10px 0;
+            margin: 10px 0 30px 0;
             border-collapse: collapse;
         }
-        .quotation-row, .cubagem-data {
+
+        .table-row {
             border: 1px solid #ddd;
             padding: 8px;
         }
-        .quotation-column {
+
+        .table-column {
             text-align: left;
+            padding: 8px;
+            border-right: 1px solid #ddd;
         }
+
         h5, h6 {
             margin: 10px 0;
+        }
+
+        .small-text {
+            font-size: 0.7em;
         }
     </style>
 </head>
@@ -53,8 +68,16 @@
                 {% if results[0] %}
                     <div class="additional-info">
                         <p><strong>ID:</strong> {{ results[0].id }}</p>
+                        <p><strong>Previsão:</strong> {{ results[0].entrega }}</p>
                         <p><strong>Prazo:</strong> {{ results[0].prazo }} dias</p>
                         <p><strong>Valor do frete:</strong> R$ {{ "%.2f"|format(results[0].totalFrete|float) }}</p>
+                        <p><strong>Tipo de Frete:&nbsp;</strong>
+                            {% if data.tipoFrete == "1" %}
+                                CIF
+                            {% elif data.tipoFrete == "2" %}
+                                FOB
+                            {% endif %}
+                        </p>
                     </div>
                 {% else %}
                     <div class="additional-info">
@@ -75,8 +98,12 @@
                 {% else %}
                     {% if results[1] %}
                         <div class="additional-info">
-                            <p><strong>Previsão:</strong> {{ format_datetime(results[1].EntregaPrevista) }}</p>
+                            <p><strong>ID:</strong> - </p>
+                            <p><strong>Previsão:</strong> {{ results[1].entrega }}</p>
+                            <p><strong>Prazo:</strong> {{ results[1].prazo }} dias</p>
                             <p><strong>Valor do frete:</strong> R$ {{ "%.2f"|format(results[1].ValorFrete|float) }}</p>
+                            <p><strong>Tipo de Frete:&nbsp;</strong>CIF</p>
+                            <p class="small-text">Obs: trabalha somente com CIF</p>
                         </div>
                     {% else %}
                         <div class="additional-info">
@@ -90,50 +117,50 @@
     </div>
     <div class="quotation-data">
         <h3>Dados da cotação:</h3>
-        <table class="quotation-table">
-            <tr class="quotation-row">
-                <td class="quotation-column"><strong>CNPJ Remetente:&nbsp;</strong> {{ data.cnpjRemetente }}</td>
-                <td class="quotation-column"><strong>CNPJ Destinatário:&nbsp;</strong> {{ data.cnpjDestinatario }}</td>
+        <table class="table">
+            <tr class="table-row">
+                <td class="table-column"><strong>CNPJ Remetente:&nbsp;</strong> {{ data.cnpjRemetente }}</td>
+                <td class="table-column"><strong>CNPJ Destino:&nbsp;</strong> {{ data.cnpjDestinatario }}</td>
             </tr>
-            <tr class="quotation-row">
-                <td class="quotation-column"><strong>CEP Origem:&nbsp;</strong> {{ data.cepOrigem }}</td>
-                <td class="quotation-column"><strong>CEP Destino:&nbsp;</strong> {{ data.cepDestino }}</td>
+            <tr class="table-row">
+                <td class="table-column"><strong>CEP Origem:&nbsp;</strong> {{ data.cepOrigem }}</td>
+                <td class="table-column"><strong>CEP Destino:&nbsp;</strong> {{ data.cepDestino }}</td>
             </tr>
-            <tr class="quotation-row">
-                <td class="quotation-column"><strong>Tipo de Frete:&nbsp;</strong> {{ data.tipoFrete }} - 
+            <tr class="table-row">
+                <td class="table-column"><strong>Tipo de Frete:&nbsp;</strong>
                     {% if data.tipoFrete == "1" %}
                         CIF
                     {% elif data.tipoFrete == "2" %}
                         FOB
                     {% endif %}
                 </td>
-                <td class="quotation-column"><strong>Modalidade:&nbsp;</strong>
+                <td class="table-column"><strong>Modalidade:&nbsp;</strong>
                     {% if data.modal == "R" %}
                         Rodoviário
-                    {% elif data.modal== "A" %}
+                    {% elif data.modal == "A" %}
                         Aéreo
                     {% endif %}
                 </td>
             </tr>
-            <tr class="quotation-row">
-                <td class="quotation-column"><strong>Valor da Mercadoria:&nbsp;</strong> R$ {{ "%.2f"|format(data.vlrMercadoria|float) }}</td>
-                <td class="quotation-column"><strong>Peso:&nbsp;</strong> {{ data.peso }} kg</td>
+            <tr class="table-row">
+                <td class="table-column"><strong>Valor da Mercadoria:&nbsp;</strong> R$ {{ "%.2f"|format(data.vlrMercadoria|float) }}</td>
+                <td class="table-column"><strong>Peso:&nbsp;</strong> {{ data.peso }} kg</td>
             </tr>
-            <tr class="quotation-row">
-                <td class="quotation-column"><strong>Total de volumes:&nbsp;</strong> {{ data.volumes }}</td>
-                <td class="quotation-column"><strong>Peso cubado:&nbsp;</strong> {{ data.pesoCubado }} </td>
+            <tr class="table-row">
+                <td class="table-column"><strong>Total de volumes:&nbsp;</strong> {{ data.volumes }}</td>
+                <td class="table-column"><strong>Peso cubado:&nbsp;</strong> {{ data.pesoCubado }} kg</td>
             </tr>
         </table>
         <h3>Cubagem dos volumes:</h3>
         {% for cubagem in data.cubagem %}
-            <table class="cubagem-table quotation-table">
-                <tr class="quotation-row">
-                    <td class="cubagem-data quotation-column"><strong>Altura:&nbsp;</strong> {{ cubagem.altura }} m</td>
-                    <td class="cubagem-data quotation-column"><strong>Largura:&nbsp;</strong> {{ cubagem.largura }} m</td>
+            <table class="table">
+                <tr class="table-row">
+                    <td class="table-column"><strong>Altura:&nbsp;</strong> {{ cubagem.altura }} m</td>
+                    <td class="table-column"><strong>Largura:&nbsp;</strong> {{ cubagem.largura }} m</td>
                 </tr>
-                <tr class="quotation-row">
-                    <td class="cubagem-data quotation-column"><strong>Comprimento:&nbsp;</strong> {{ cubagem.comprimento }} m</td>
-                    <td class="cubagem-data quotation-column"><strong>Volumes (com essa dimensão):&nbsp;</strong> {{ cubagem.volumes }}</td>
+                <tr class="table-row">
+                    <td class="table-column"><strong>Comprimento:&nbsp;</strong> {{ cubagem.comprimento }} m</td>
+                    <td class="table-column"><strong>Volumes (iguais):&nbsp;</strong> {{ cubagem.volumes }}</td>
                 </tr>
             </table>
         {% endfor %}

@@ -1,6 +1,7 @@
-from flask import Flask, render_template, request, url_for, Blueprint, redirect
+# This project was developed with the assistance of GitHub Copilot and CS50's Duck Debugger (ddb).
+
+from flask import Flask, render_template, request
 import os
-import json
 import base64
 from dotenv import load_dotenv
 import httpx
@@ -8,7 +9,7 @@ import asyncio
 import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
-from datetime import datetime
+from datetime import datetime, timedelta
 
 load_dotenv()
 
@@ -91,9 +92,6 @@ PATRUS_URL = "https://api-patrus.azure-api.net/api/v1/logistica/comercial/cotaco
 
 CUBIC_FACTOR = 300 # Constant for cubic weight calculation (used only for Patrus)
 
-# PAULINERIS CREDENTIALS, HEADERS AND URL
-
-
 # FUNCTION FOR SENDING EMAILS
 def send_email(subject, recipient, html_content):
     sender_email = SENDER_EMAIL
@@ -113,28 +111,34 @@ def send_email(subject, recipient, html_content):
         server.login(sender_email, sender_password)
         server.sendmail(sender_email, recipient, msg.as_string())
         server.quit()
+
+        #TEST
         print("Email sent successfully")
     except Exception as e:
+
+
+        #TEST
         print(f"Failed to send email: {e}")
 
 
 # DATA SANITIZING FUNCTIONS
-def format_datetime(date_str):
-    # Parse the date string
-    date_obj = datetime.strptime(date_str, "%Y-%m-%dT%H:%M:%S")
+def format_datetime(input):
+    if isinstance(input, int):
+        today = datetime.now()
+        date_obj = today + timedelta(days=input)
+        formatted_date = date_obj.strftime("%d/%m/%Y")
+        days_left = input
+    elif isinstance(input, str):
+        date_obj = datetime.strptime(input, "%Y-%m-%dT%H:%M:%S") # Parse the date string 
+        today = datetime.now() # Calculate the days left
+        days_left = (date_obj - today).days   
+        formatted_date = date_obj.strftime("%d/%m/%Y") # Format the date as dd/mm/yyyy
+    else:
+        formatted_date = None
+        days_left = None
     
-    # Calculate the days left
-    today = datetime.now()
-    days_left = (date_obj - today).days
-    
-    # Format the date as dd/mm/yyyy
-    formatted_date = date_obj.strftime("%d/%m/%Y")
-    
-    # Return the formatted string
-    return f"{formatted_date} ({days_left} dias)"
+    return formatted_date, days_left
 
-# Adding format_datetime function to the Jinja environment
-app.jinja_env.globals.update(format_datetime=format_datetime)
 
 def sanitize_text(input_string):
         for char in [".", "/", "-", " "]:
@@ -159,14 +163,8 @@ def sanitize_float(input_string):
     formatted_output = round(output_string, 2)
     return formatted_output
 
-# BLUEPRINT SETTING
-# cotacao_bp = Blueprint('cotacao', __name__, url_prefix='/cotacao')
 
 @app.route('/')
-def home():
-    return redirect('/cotacao')
-
-@app.route('/cotacao')
 def index():
     return render_template('index.html')
 
@@ -176,18 +174,21 @@ def error(error_message, code):
 
 @app.route('/submit', methods=['POST'])
 async def submit():
+
     # TEST
     print("submission working")
     
-    errors = [None, None]  # Add one slot for each API call (Patrus has two)
-    results = [None, None]  # Add one slot for each freight company
+    # Initialize errors and results array (add one slot for each freight company)
+    errors = [None, None] 
+    results = [None, None]
 
     
     patrus_headers, header_error = await get_patrus_headers()
     if header_error:
         patrus_headers = None
     
-    print("initiating main form handling") #TEST 
+    #TEST
+    print("initiating main form handling")  
     
     nome_fantasia = request.form['nome_fantasia']
     
@@ -239,27 +240,16 @@ async def submit():
 
     cubagem = []
 
-    print("main form handling succesfull") #TEST 
-    
-    print(request.form['volumeGroupIds']) #TEST
-
     volume_group_ids = request.form['volumeGroupIds'].split(",")   
-
-    print(volume_group_ids) #TEST
-    print(request.form) #TEST
 
     total_cubic_weight = 0
 
     # Dynamically handling volume groups
     for i in volume_group_ids:
         altura_key = f'altura{i}'
-        print(altura_key) #TEST
         largura_key = f'largura{i}'
-        print(largura_key) #TEST
         comprimento_key = f'comprimento{i}'
-        print(comprimento_key) #TEST
         volumes_key = f'volumes{i}'
-        print(volumes_key) #TEST
 
         altura = sanitize_float(request.form[altura_key])
         largura = sanitize_float(request.form[largura_key])
@@ -277,7 +267,9 @@ async def submit():
             "comprimento": comprimento,
             "volumes": volumes
         })
-       
+
+    round_cubic_weight = round(total_cubic_weight, 2)
+
     braspress_data = {
         "cnpjRemetente": cnpj_remetente,
         "cnpjDestinatario": cnpj_destinatario,
@@ -298,7 +290,7 @@ async def submit():
         "Carga": {
             "Volumes": volumes_total,
             "Peso": peso_total,
-            "PesoCubado": total_cubic_weight,
+            "PesoCubado": round_cubic_weight,
             "ValorMercadoria": vlr_mercadoria
         },
     }
@@ -318,32 +310,18 @@ async def submit():
         "cubagem": cubagem
     }
 
-    #TEST
-    data_test1 = json.dumps(braspress_data)
-    data_test2 = json.dumps(patrus_data)
-    print("BRASPRESS JSON")
-    print(data_test1)
-    print("PATRUS JSON")
-    print(data_test2)
-
     async with httpx.AsyncClient() as client:
         tasks = [
-            client.post(BRASPRESS_URL, json=braspress_data, headers=BRASPRESS_HEADERS),
+            client.post(BRASPRESS_URL, json=braspress_data, headers=BRASPRESS_HEADERS, timeout=30.0),
             client.post(PATRUS_URL, json=patrus_data, headers=patrus_headers, timeout=30.0),
-            # client.post( , json=data, headers= )
         ]
         responses = await asyncio.gather(*tasks, return_exceptions=True)
-
-    # TEST
-    print("Response:")
     
     for i, response in enumerate(responses):
-        
-        # TEST
-        print(i)
+
+        #TEST
         print(response)
-
-
+        
         if isinstance(response, Exception):
             errors[i] = str(response)
         else:
@@ -353,16 +331,32 @@ async def submit():
             except httpx.ReadTimeout:
                 errors[i] = "The read operation timed out"
             except httpx.HTTPStatusError as e:
-                errors[i] = f"HTTP error occurred: {e}"
-                errors[i] += f"Response Content: {e.response.text}"
+                errors[i] = {
+                    'statusCode': e.response.status_code,
+                    'message': e.response.json().get('message', 'Unknown error')
+                }
 
-    # TEST
-    print("Result:")
-    print(results)
-    print("Errors:")
-    print(errors)
+    # PADRONIZING THE RESULTS
+    # Braspress
+    if results[0]:
+        delivery_date, delivery_time = format_datetime(results[0]['prazo'])
+        results[0]['entrega'] = delivery_date
+        results[0]['prazo'] = delivery_time
 
-    
+        #TEST
+        print("Results 0")
+        print(results[0])
+
+    # Patrus
+    if results[1]:
+        delivery_date, delivery_time = format_datetime(results[1]['EntregaPrevista'])
+        results[1]['entrega'] = delivery_date
+        results[1]['prazo'] = delivery_time
+
+        #TEST
+        print("Result 1")
+        print(results[1])
+
     # SENDING EMAIL
     date = datetime.now().strftime("%d/%m/%Y às %H:%M")
     price = f"{vlr_mercadoria:.2f}"
@@ -370,15 +364,8 @@ async def submit():
     html_content = render_template('email_result.html', results=results, errors=errors, data=main_data, header_error=header_error, date=date)
 
     send_email(subject, RECIPIENT_EMAIL, html_content)
-
-    # Verify the loaded recipient e-mail
-    print(f"Recipient Email: {RECIPIENT_EMAIL}")
     
-
     return render_template('result.html', results=results, errors=errors, data=main_data, header_error=header_error)
-
-# Register the Blueprint
-# app.register_blueprint(cotacao_bp)
 
 if __name__ == '__main__':
     app.run(debug=True)

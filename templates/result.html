@@ -12,8 +12,16 @@
                     {% if results[0] %}
                         <div class="additional-info">
                             <p><strong>ID:</strong> {{ results[0].id }}</p>
+                            <p><strong>Previsão:</strong> {{ results[0].entrega }}</p>
                             <p><strong>Prazo:</strong> {{ results[0].prazo }} dias</p>
                             <p><strong>Valor do frete:</strong> R$ {{ "%.2f"|format(results[0].totalFrete|float) }}</p>
+                            <p><strong>Tipo de Frete:&nbsp;</strong>
+                                {% if data.tipoFrete == "1" %}
+                                    CIF
+                                {% elif data.tipoFrete == "2" %}
+                                    FOB
+                                {% endif %}
+                            </p>
                         </div>
                     {% else %}
                         <div class="additional-info">
@@ -30,14 +38,18 @@
                 <div class="result-box">
                     {% if header_error %}
                         <div class="additional-info">
-                            <p><strong>Código do erro:</strong> {{ errors[1].statusCode }}</p>
-                            <p><strong>Mensagem:</strong> {{ errors[1].message }}</p>
+                            <p><strong>Código do erro:</strong> {{ header_error.statusCode }}</p>
+                            <p><strong>Mensagem:</strong> {{ header_error.message }}</p>
                         </div>
                     {% else %}
                         {% if results[1] %}
                             <div class="additional-info">
-                                <p><strong>Previsão:</strong> {{ format_datetime(results[1].EntregaPrevista) }}</p>
+                                <p><strong>ID:</strong> - </p>
+                                <p><strong>Previsão:</strong> {{ results[1].entrega }}</p>
+                                <p><strong>Prazo:</strong> {{ results[1].prazo }} dias</p>
                                 <p><strong>Valor do frete:</strong> R$ {{ "%.2f"|format(results[1].ValorFrete|float) }}</p>
+                                <p><strong>Tipo de Frete:&nbsp;</strong>CIF</p>
+                                <p class="small-text">*trabalha somente com CIF</p>
                             </div>
                         {% else %}
                             <div class="additional-info">
@@ -48,26 +60,10 @@
                     {% endif %}
                 </div>
             </div>
-            <!--
-            <div class="company-result">
-                div class="image-container">
-                    <img src="{{ url_for('static', filename='paulineris_logo.jpg') }}" alt="Paulineris Logo" class="company-logo">
-                </div>
-                <div class="result-box">
-                    {% if results[2] %}
-                        <div class="additional-info">
-                            <p>{{ results[2] }}</p>
-                        </div>
-                    {% else %}
-                        <p>{{ errors[2] }}</p>
-                    {% endif %}
-                </div>
-            </div>
-        -->
         </div>
     </div>
     <div class="quotation-data">
-        <h5>Dados da cotação para <strong><u>{{ data.nomeFantasia }}</u></strong></h5>
+        <h5>Dados da cotação para <strong>{{ data.nomeFantasia }}</strong></h5>
             <table class="quotation-table">
                     <tr class="quotation-row">
                         <td class="quotation-column"><strong>CNPJ Remetente:&nbsp;</strong> {{ data.cnpjRemetente }}</td>
@@ -78,7 +74,7 @@
                         <td class="quotation-column"><strong>CEP Destino:&nbsp;</strong> {{ data.cepDestino }}</td>
                     </tr>
                     <tr class="quotation-row">
-                        <td class="quotation-column"><strong>Tipo de Frete:&nbsp;</strong> {{ data.tipoFrete }} - 
+                        <td class="quotation-column"><strong>Tipo de Frete:&nbsp;</strong>
                             {% if data.tipoFrete == "1" %}
                                 CIF
                             {% elif data.tipoFrete == "2" %}
@@ -99,7 +95,7 @@
                     </tr>
                     <tr class="quotation-row">
                         <td class="quotation-column"><strong>Total de volumes:&nbsp;</strong> {{ data.volumes }}</td>
-                        <td class="quotation-column"><strong>Peso cubado:&nbsp;</strong> {{ data.pesoCubado }} </td>
+                        <td class="quotation-column"><strong>Peso cubado:&nbsp;</strong> {{ data.pesoCubado }} kg</td>
             </table>
         <h6><strong>Cubagem dos volumes:</strong></h6>
             {% for cubagem in data.cubagem %}
@@ -110,7 +106,7 @@
                     </tr>
                     <tr class="quotation-row">
                         <td class="cubagem-data quotation-column"><strong>Comprimento:&nbsp;</strong> {{ cubagem.comprimento }} m</td>
-                        <td class="cubagem-data quotation-column"><strong>Volumes (com essa dimensão):&nbsp;</strong> {{ cubagem.volumes }}</td>
+                        <td class="cubagem-data quotation-column"><strong>Volumes (iguais):&nbsp;</strong> {{ cubagem.volumes }}</td>
                     </tr>
                 </table>
             {% endfor %}

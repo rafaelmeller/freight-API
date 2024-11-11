@@ -2,6 +2,13 @@
 {% block title %}Cotação de fretes{% endblock %}
 {% block header %}Cotação de fretes{% endblock %}
 {% block main %}
+    <!-- Loading message -->
+     <div id="loading-container">
+        <div id="loading-message">
+            <p>Calculando os fretes, aguarde&nbsp;</p>
+        </div>
+        <div id="loading" class="loader"></div>
+    </div>
     <!-- Form to enter freight details -->
     <form action="{{ url_for('submit') }}" id="mainForm" method="POST">
         <div class="row">
