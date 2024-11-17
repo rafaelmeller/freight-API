@@ -2,12 +2,15 @@
 {% block title %}Cotação de fretes{% endblock %}
 {% block header %}Cotação de fretes{% endblock %}
 {% block main %}
-    <!-- Loading message -->
+    <!-- Loading container/animation -->
      <div id="loading-container">
-        <div id="loading-message">
-            <p>Calculando os fretes, aguarde&nbsp;</p>
+        <div class="row">
+            <div id="loading-message"><p>Carregando os fretes, aguarde...</p></div>
         </div>
-        <div id="loading" class="loader"></div>
+        <div class="row"></div>
+            <div id="loading" class="loader"></div>
+            <span class="truck-emoticon">&#x202E;🚚&#x200E;</span>
+        </div>
     </div>
     <!-- Form to enter freight details -->
     <form action="{{ url_for('submit') }}" id="mainForm" method="POST">

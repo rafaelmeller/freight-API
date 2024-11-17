@@ -2,6 +2,19 @@
 {% block title %}Resultado da cotação{% endblock %}
 {% block header %}Resultado da cotação{% endblock %}
 {% block main %}
+    <div class="alert-container">
+        {% if email_success %}
+        <div class="alert alert-success alert-dismissible fade show fixed-top" role="alert">
+            <strong>E-mail enviado com sucesso!</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% elif email_error %}
+        <div class="alert alert-danger alert-dismissible fade show fixed-top" role="alert">
+            <strong>Erro ao enviar o e-mail:&nbsp;</strong>{{ email_error }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endif %}
+    </div>
     <div class="results-field">
         <div class="frame">
             <div class="company-result">
