@@ -38,6 +38,7 @@
                         </div>
                     {% else %}
                         <div class="additional-info">
+                            <p><strong>ERRO</strong></p>
                             <p><strong>Código do erro:</strong> {{ errors[0].statusCode }}</p>
                             <p><strong>Mensagem:</strong> {{ errors[0].message }}</p>
                         </div>
@@ -51,8 +52,10 @@
                 <div class="result-box">
                     {% if header_error %}
                         <div class="additional-info">
+                            <p><strong>ERRO COM A API</strong></p>
                             <p><strong>Código do erro:</strong> {{ header_error.statusCode }}</p>
-                            <p><strong>Mensagem:</strong> {{ header_error.message }}</p>
+                            <p><strong>Mensagem:</strong> {{ header_error.message }}: {{ header_error.description }}</p>
+                            <p><strong>Obs: Contate a assistência técnica</strong></p>
                         </div>
                     {% else %}
                         {% if results[1] %}
@@ -66,6 +69,7 @@
                             </div>
                         {% else %}
                             <div class="additional-info">
+                                <p><strong>ERRO</strong></p>
                                 <p><strong>Código do erro:</strong> {{ errors[1].statusCode }}</p>
                                 <p><strong>Mensagem:</strong> {{ errors[1].message }}</p>
                             </div>

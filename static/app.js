@@ -1,6 +1,11 @@
+// This project was developed with the assistance of GitHub Copilot and CS50's Duck Debugger (ddb).
+
 document.addEventListener('DOMContentLoaded', function() {
-    // Attach event listeners
-    document.getElementById('addVolumeGroup').addEventListener('click', addVolumeGroup);
+    // Ensure the element exists before attaching event listeners
+    const addVolumeGroupButton = document.getElementById('addVolumeGroup');
+    if (addVolumeGroupButton) {
+        addVolumeGroupButton.addEventListener('click', addVolumeGroup);
+    }
     document.addEventListener('input', updateSubmitButtonState);
 
     // Initialize the form
@@ -10,8 +15,12 @@ document.addEventListener('DOMContentLoaded', function() {
     updateVolumesTotal();
 
     // Attach the validateAndSubmitForm function to the form's submit event
-    document.getElementById('mainForm').addEventListener('submit', validateAndSubmitForm);
-
+    document.getElementById('mainForm').addEventListener('submit', function(event) {
+        event.preventDefault(); // Prevent form submission
+        document.getElementById('loading-container').style.display = 'flex'; // Show the loading animation
+        document.getElementById('mainForm').style.display = 'none'; // Hide the form
+        validateAndSubmitForm(event);
+    });
     // Attach the formatCNPJCPF function to the CNPJ input fields
     document.getElementById('cnpjRemetente').addEventListener('input', formatCNPJCPF);
     document.getElementById('cnpjDestinatario').addEventListener('input', formatCNPJCPF);
