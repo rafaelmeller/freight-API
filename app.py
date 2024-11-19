@@ -5,7 +5,7 @@ import httpx
 from datetime import datetime
 from flask import Flask, render_template, request
 from helpers import (
-    send_email, format_datetime, sanitize_text, sanitize_int, sanitize_float,
+    send_email, format_datetime, format_currency, sanitize_text, sanitize_int, sanitize_float,
     get_patrus_headers, BRASPRESS_HEADERS, BRASPRESS_URL, PATRUS_URL, CUBIC_FACTOR, RECIPIENT_EMAIL
 )
 
@@ -160,8 +160,9 @@ async def submit():
     async with httpx.AsyncClient() as client:
         tasks = [
             client.post(BRASPRESS_URL, json=braspress_data, headers=BRASPRESS_HEADERS, timeout=30.0),
-            client.post(PATRUS_URL, json=patrus_data, headers=patrus_headers, timeout=30.0),
         ]
+        if patrus_headers:
+            tasks.append(client.post(PATRUS_URL, json=patrus_data, headers=patrus_headers, timeout=30.0))
         responses = await asyncio.gather(*tasks, return_exceptions=True)
     
     for i, response in enumerate(responses):
@@ -180,15 +181,17 @@ async def submit():
             except httpx.HTTPStatusError as e:
                 errors[i] = {
                     'statusCode': e.response.status_code,
-                    'message': e.response.json().get('message', 'Unknown error')
+                    'message': e.response.text
                 }
 
     # PADRONIZING THE RESULTS
     # Braspress
     if results[0]:
+        value_result = results[0]['totalFrete']
         delivery_date, delivery_time = format_datetime(results[0]['prazo'])
         results[0]['entrega'] = delivery_date
         results[0]['prazo'] = delivery_time
+        results[0]['totalFrete'] = format_currency(value_result)
 
         #TEST
         print("Results 0")
@@ -196,9 +199,11 @@ async def submit():
 
     # Patrus
     if results[1]:
+        value_result = results[1]['ValorFrete']
         delivery_date, delivery_time = format_datetime(results[1]['EntregaPrevista'])
         results[1]['entrega'] = delivery_date
         results[1]['prazo'] = delivery_time
+        results[1]['ValorFrete'] = format_currency(value_result)
 
         #TEST
         print("Result 1")

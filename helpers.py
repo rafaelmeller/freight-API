@@ -59,17 +59,21 @@ async def get_patrus_headers():
     try:
         access_token = await get_patrus_access_token()
     except httpx.HTTPStatusError as e:
+        response_json = e.response.json()
         header_error = {
             'statusCode': e.response.status_code,
-            'message': e.response.json().get('message', 'Unknown error')
+            'message': response_json.get('error', 'Unknown error'),
+            'description': response_json.get('error_description', 'No description available')
         }
+        
         print(f"HTTP error occurred: {e}")
         print(f"Response Content: {e.response.text}")
         return None, header_error
     except Exception as e:
         header_error = {
             'statusCode': 'Unknown',
-            'message': str(e)
+            'message': str(e),
+            'description': 'No description available'
         }
         return None, header_error
 
@@ -136,6 +140,17 @@ def format_datetime(input):
         days_left = None
     
     return formatted_date, days_left
+
+
+def format_currency(value):
+    print(type(value))
+    print(value)
+    if isinstance(value, str):
+        value = sanitize_float(value.replace("R$", ""))
+        print(value)
+    formatted_value = f"R$ {value:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".") 
+
+    return formatted_value
 
 
 def sanitize_text(input_string):
