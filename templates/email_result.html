@@ -70,7 +70,7 @@
                         <p><strong>ID:</strong> {{ results[0].id }}</p>
                         <p><strong>Previsão:</strong> {{ results[0].entrega }}</p>
                         <p><strong>Prazo:</strong> {{ results[0].prazo }} dias</p>
-                        <p><strong>Valor do frete:</strong> R$ {{ "%.2f"|format(results[0].totalFrete|float) }}</p>
+                        <p><strong>Valor do frete:</strong> {{ results[0].totalFrete }}</p>
                         <p><strong>Tipo de Frete:&nbsp;</strong>
                             {% if data.tipoFrete == "1" %}
                                 CIF
@@ -104,7 +104,7 @@
                             <p><strong>ID:</strong> - </p>
                             <p><strong>Previsão:</strong> {{ results[1].entrega }}</p>
                             <p><strong>Prazo:</strong> {{ results[1].prazo }} dias</p>
-                            <p><strong>Valor do frete:</strong> R$ {{ "%.2f"|format(results[1].ValorFrete|float) }}</p>
+                            <p><strong>Valor do frete:</strong> {{ results[1].ValorFrete }}</p>
                             <p><strong>Tipo de Frete:&nbsp;</strong>CIF</p>
                             <p class="small-text">Obs: trabalha somente com CIF</p>
                         </div>
@@ -147,7 +147,7 @@
                 </td>
             </tr>
             <tr class="table-row">
-                <td class="table-column"><strong>Valor da Mercadoria:&nbsp;</strong> R$ {{ "%.2f"|format(data.vlrMercadoria|float) }}</td>
+                <td class="table-column"><strong>Valor da Mercadoria:&nbsp;</strong> {{ data.vlrMercadoria }}</td>
                 <td class="table-column"><strong>Peso:&nbsp;</strong> {{ data.peso }} kg</td>
             </tr>
             <tr class="table-row">

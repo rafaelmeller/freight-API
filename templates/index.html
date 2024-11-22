@@ -22,21 +22,21 @@
         <div class="row">
             <div class="col-md-6 mb-3">
                 <label for="cnpjRemetente">CNPJ do Remetente:</label>
-                <input required autocomplete="off" class="form-control" type="text" name="cnpj_remetente" id="cnpjRemetente" placeholder="CNPJ do Remetente">
+                <input required autocomplete="off" class="form-control" type="text" name="cnpj_remetente" id="cnpjRemetente" placeholder="CNPJ do Remetente" value="04.790.854/0001-70">
             </div>
             <div class="col-md-6 mb-3">
                 <label for="cnpjDestinatario">CNPJ do Destinatário:</label>
-                <input required autocomplete="off" class="form-control" type="text" name="cnpj_destinatario" id="cnpjDestinatario" placeholder="CNPJ do Destinatário">
+                <input required autocomplete="off" class="form-control" type="text" name="cnpj_destinatario" id="cnpjDestinatario" placeholder="CNPJ do Destinatário" value="48.053.457/0001-90">
             </div>
         </div>
         <div class="row">
             <div class="col-md-6 mb-3">
                 <label for="cepOrigem">CEP de origem:</label>
-                <input required autocomplete="off" class="form-control" type="text" name="cep_origem" id="cepOrigem" placeholder="CEP de origem">
+                <input required autocomplete="off" class="form-control" type="text" name="cep_origem" id="cepOrigem" placeholder="CEP de origem" value="37.450-000">
             </div>
             <div class="col-md-6 mb-3">
                 <label for="cepDestino">CEP de destino:</label>
-                <input required autocomplete="off" class="form-control" type="text" name="cep_destino" id="cepDestino" placeholder="CEP de destino">
+                <input required autocomplete="off" class="form-control" type="text" name="cep_destino" id="cepDestino" placeholder="CEP de destino" value="88.032-005">
             </div>
         </div>
         <div class="row">
@@ -62,6 +62,12 @@
                 <label for="volumesTotal">Total de volumes:</label>
                 <input required id="volumesTotal" class="form-control" type="number" name="volumes_total" readonly>
             </div>   
+        </div>
+        <div class="row">
+            <div class="col-md-12 mb-3">
+            <label for="emailEnvio">E-mail para envio da cotação:</label>
+            <input required autocomplete="off" class="form-control" type="text" name="email_envio" id="emailEnvio" placeholder="E-mail para envio" value="rafael_meller@icloud.com">
+            </div>
         </div>           
         <div class="button-container">
             <button type="submit" id="submitButton" class="btn btn-primary">Realizar cotação</button>

@@ -28,6 +28,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Attach the formatCEP function to the CEP input fields
     document.getElementById('cepOrigem').addEventListener('input', formatCEP);
     document.getElementById('cepDestino').addEventListener('input', formatCEP);
+
+    // Attach the formatEmail function to the e-mail input field
+    document.getElementById('emailEnvio').addEventListener('input', formatEmail);
 });
 
 
@@ -64,6 +67,21 @@ function formatCEP(event) {
     }
 
     input.value = value;
+}
+
+function formatEmail(event) {
+    const input = event.target;
+    let value = input.value;
+
+    // Regular expression for validating email format
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    // Check if the email format is valid
+    if (!emailPattern.test(value)) {
+        input.setCustomValidity('Por favor, insira um e-mail válido.');
+    } else {
+        input.setCustomValidity('');
+    }
 }
 
 function updateVolumeFields() {

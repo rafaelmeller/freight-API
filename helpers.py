@@ -14,7 +14,6 @@ load_dotenv()
 # E-MAIL CREDENTIALS, RECIPIENT AND CONFIGURATION
 SENDER_EMAIL = os.environ.get('SENDER_EMAIL')
 SENDER_PASSWORD = os.environ.get('SENDER_PASSWORD')
-RECIPIENT_EMAIL = os.environ.get('RECIPIENT_EMAIL')
 SMTP_SERVER = "smtp.gmail.com"
 SMTP_PORT = 587
 
@@ -132,8 +131,18 @@ def format_datetime(input):
         formatted_date = date_obj.strftime("%d/%m/%Y")
     elif isinstance(input, str):
         date_obj = datetime.strptime(input, "%Y-%m-%dT%H:%M:%S") # Parse the date string 
-        today = datetime.now() # Calculate the days left
-        days_left = (date_obj - today).days   
+        today = datetime.now()
+        tomorrow = today + timedelta(days=1)
+        if tomorrow.weekday() > 4: # If tomorrow is Saturday (5) or Sunday (6)
+            first_day = tomorrow + timedelta(days=(7 - tomorrow.weekday()))  # Move to next Monday
+        else:
+            first_day = tomorrow
+        days_left = 1
+        current_day = first_day
+        while current_day <= date_obj:
+            if current_day.weekday() < 5:  # Monday to Friday are < 5
+                days_left += 1
+            current_day += timedelta(days=1)   
         formatted_date = date_obj.strftime("%d/%m/%Y") # Format the date as dd/mm/yyyy
     else:
         formatted_date = None
@@ -143,21 +152,18 @@ def format_datetime(input):
 
 
 def format_currency(value):
-    print(type(value))
-    print(value)
     if isinstance(value, str):
         value = sanitize_float(value.replace("R$", ""))
-        print(value)
     formatted_value = f"R$ {value:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".") 
 
     return formatted_value
 
 
 def sanitize_text(input_string):
-        for char in [".", "/", "-", " "]:
-            input_string = input_string.replace(char, "")
-        output_string = int(input_string)
-        return output_string
+    for char in [".", "/", "-", " "]:
+        input_string = input_string.replace(char, "")
+    output_string = int(input_string)
+    return output_string
 
 
 def sanitize_int(input_string):

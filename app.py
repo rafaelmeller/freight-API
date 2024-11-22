@@ -6,7 +6,7 @@ from datetime import datetime
 from flask import Flask, render_template, request
 from helpers import (
     send_email, format_datetime, format_currency, sanitize_text, sanitize_int, sanitize_float,
-    get_patrus_headers, BRASPRESS_HEADERS, BRASPRESS_URL, PATRUS_URL, CUBIC_FACTOR, RECIPIENT_EMAIL
+    get_patrus_headers, BRASPRESS_HEADERS, BRASPRESS_URL, PATRUS_URL, CUBIC_FACTOR
 )
 
 app = Flask(__name__)
@@ -39,7 +39,13 @@ async def submit():
     
     nome_fantasia = request.form['nome_fantasia']
     
-    modalidade = "R" 
+    modalidade = "R"
+
+    try:
+        email_envio = request.form['email_envio']
+        email_envio = email_envio.strip()
+    except ValueError:
+        return error("E-mail do destinatário inválido", 400)
 
     try:
         cnpj_tomador = request.form['cnpj_remetente']
@@ -116,6 +122,7 @@ async def submit():
         })
 
     round_cubic_weight = round(total_cubic_weight, 2)
+    valor_mercadoria = format_currency(vlr_mercadoria)
 
     braspress_data = {
         "cnpjRemetente": cnpj_remetente,
@@ -150,7 +157,7 @@ async def submit():
         "tipoFrete": tipo_frete,
         "cepOrigem": cep_origem,
         "cepDestino": cep_destino,
-        "vlrMercadoria": vlr_mercadoria,
+        "vlrMercadoria": valor_mercadoria,
         "peso": peso_total,
         "volumes": volumes_total,
         "pesoCubado": total_cubic_weight,
@@ -195,6 +202,7 @@ async def submit():
 
         #TEST
         print("Results 0")
+        print(results[0]['prazo'])
         print(results[0])
 
     # Patrus
@@ -207,15 +215,17 @@ async def submit():
 
         #TEST
         print("Result 1")
+        print(results[1]['EntregaPrevista'])
         print(results[1])
 
     # SENDING EMAIL
+    recipient_email = email_envio 
     date = datetime.now().strftime("%d/%m/%Y às %H:%M")
     price = f"{vlr_mercadoria:.2f}"
     subject = f"Cotação para {nome_fantasia} | valor do pedido: R$ {price} | {date}"
     html_content = render_template('email_result.html', results=results, errors=errors, data=main_data, header_error=header_error, date=date)
 
-    email_success, email_error = send_email(subject, RECIPIENT_EMAIL, html_content)
+    email_success, email_error = send_email(subject, recipient_email, html_content)
     
     return render_template('result.html', results=results, errors=errors, data=main_data, header_error=header_error, email_success=email_success, email_error=email_error)
 

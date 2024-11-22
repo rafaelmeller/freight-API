@@ -19,7 +19,7 @@
         <div class="frame">
             <div class="company-result">
                 <div class="image-container">
-                    <img src="{{ url_for('static', filename='braspress_logo.png') }}" alt="Braspress Logo" class="company-logo">
+                    <img src="{{ url_for('static', filename='logos-icons/braspress_logo.jpg') }}" alt="Braspress Logo" class="company-logo">
                 </div>
                 <div class="result-box">
                     {% if results[0] %}
@@ -27,7 +27,7 @@
                             <p><strong>ID:</strong> {{ results[0].id }}</p>
                             <p><strong>Previsão:</strong> {{ results[0].entrega }}</p>
                             <p><strong>Prazo:</strong> {{ results[0].prazo }} dias</p>
-                            <p><strong>Valor do frete:</strong> R$ {{ "%.2f"|format(results[0].totalFrete|float) }}</p>
+                            <p><strong>Valor do frete:</strong> {{ results[0].totalFrete }}</p>
                             <p><strong>Tipo de Frete:&nbsp;</strong>
                                 {% if data.tipoFrete == "1" %}
                                     CIF
@@ -47,7 +47,7 @@
             </div> 
             <div class="company-result">
                 <div class="image-container">
-                    <img src="{{ url_for('static', filename='patrus_logo.jpg') }}" alt="Patrus Logo" class="company-logo">
+                    <img src="{{ url_for('static', filename='logos-icons/patrus_logo.jpg') }}" alt="Patrus Logo" class="company-logo">
                 </div>
                 <div class="result-box">
                     {% if header_error %}
@@ -63,7 +63,7 @@
                                 <p><strong>ID:</strong> - </p>
                                 <p><strong>Previsão:</strong> {{ results[1].entrega }}</p>
                                 <p><strong>Prazo:</strong> {{ results[1].prazo }} dias</p>
-                                <p><strong>Valor do frete:</strong> R$ {{ "%.2f"|format(results[1].ValorFrete|float) }}</p>
+                                <p><strong>Valor do frete:</strong> {{ results[1].ValorFrete }}</p>
                                 <p><strong>Tipo de Frete:&nbsp;</strong>CIF</p>
                                 <p class="small-text">*trabalha somente com CIF</p>
                             </div>
@@ -80,7 +80,7 @@
         </div>
     </div>
     <div class="quotation-data">
-        <h5>Dados da cotação para <strong>{{ data.nomeFantasia }}</strong></h5>
+        <h5 class="quotation-heading">Dados da cotação para <strong>{{ data.nomeFantasia }}</strong></h5>
             <table class="quotation-table">
                     <tr class="quotation-row">
                         <td class="quotation-column"><strong>CNPJ Remetente:&nbsp;</strong> {{ data.cnpjRemetente }}</td>
@@ -107,7 +107,7 @@
                         </td>
                     </tr>
                     <tr class="quotation-row">
-                        <td class="quotation-column"><strong>Valor da Mercadoria:&nbsp;</strong> R$ {{ "%.2f"|format(data.vlrMercadoria|float) }}</td>
+                        <td class="quotation-column"><strong>Valor da Mercadoria:&nbsp;</strong> {{ data.vlrMercadoria }}</td>
                         <td class="quotation-column"><strong>Peso:&nbsp;</strong> {{ data.peso }} kg</td>
                     </tr>
                     <tr class="quotation-row">
