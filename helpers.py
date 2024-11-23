@@ -1,5 +1,6 @@
-# This project was developed with the assistance of GitHub Copilot and CS50's Duck Debugger (ddb).
+# This project was developed by me with the assistance of GitHub Copilot and CS50's Duck Debugger (ddb).
 
+import asyncio
 import os
 import base64
 from dotenv import load_dotenv
@@ -8,6 +9,8 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from datetime import datetime, timedelta
+from flask import redirect, session
+from functools import wraps
 
 load_dotenv()
 
@@ -86,6 +89,50 @@ async def get_patrus_headers():
 PATRUS_URL = "https://api-patrus.azure-api.net/api/v1/logistica/comercial/cotacoes/online"
 
 CUBIC_FACTOR = 300 # Constant for cubic weight calculation (used only for Patrus)
+
+async def fetch_data(data1, headers1, data2):
+        async with httpx.AsyncClient() as client:
+            tasks = [
+                client.post(BRASPRESS_URL, json=data2,
+                            headers=BRASPRESS_HEADERS, timeout=30.0),
+            ]
+            if headers1:
+                tasks.append(client.post(PATRUS_URL, json=data1,
+                             headers=headers1, timeout=30.0))
+            return await asyncio.gather(*tasks, return_exceptions=True)
+
+
+# FLASK decorator function copied from CS50's project "Finance"
+def login_required(f):
+    """
+    Decorate routes to require login.
+
+    https://flask.palletsprojects.com/en/latest/patterns/viewdecorators/
+    """
+
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if session.get("user_id") is None:
+            return redirect("/login")
+        return f(*args, **kwargs)
+
+    return decorated_function
+
+
+def update_env(key, value, env_file='.env'):
+    with open(env_file, 'r') as file:
+        lines = file.readlines()
+
+    with open(env_file, 'w') as file:
+        for line in lines:
+            if line.startswith(f"{key}="):
+                file.write(f"{key}={value}\n")
+            else:
+                file.write(line)
+
+    # Update the environment variable
+    os.environ[key] = value
+
 
 # FUNCTION FOR SENDING EMAILS
 def send_email(subject, recipient, html_content):
