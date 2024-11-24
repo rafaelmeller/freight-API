@@ -2,6 +2,19 @@
 {% block title %}Cotação de fretes{% endblock %}
 {% block header %}Cotação de fretes{% endblock %}
 {% block main %}
+    <div class="alert-container">
+        {% if password_success %}
+        <div class="alert alert-success alert-dismissible fade show fixed-top" role="alert">
+            <strong>{{ password_success }}</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% elif password_error %}
+        <div class="alert alert-danger alert-dismissible fade show fixed-top" role="alert">
+            <strong>{{ password_error }}</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+        {% endif %}
+    </div>
     <!-- Loading container/animation -->
      <div id="loading-container">
         <div class="row">
