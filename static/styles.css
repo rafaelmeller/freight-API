@@ -1,4 +1,4 @@
-/* This project was developed with the assistance of GitHub Copilot and CS50's Duck Debugger (ddb). */
+/* This project was developed by me with the assistance of GitHub Copilot and CS50's Duck Debugger (ddb). */
 
 .layout-main {
     display: flex;
@@ -34,11 +34,17 @@
     flex-wrap: wrap;
 }
 
-@media (max-width: 768px) {
-    .frame {
-        flex-direction: column;
-        align-items: center;
-    }
+.col-md-6 {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+    padding: 0 5px; /* Adjust padding for better spacing */
+}
+
+.form-control {
+    width: 100%; /* Ensure the form control takes full width */
+    box-sizing: border-box; /* Include padding and border in the element's total width and height */
 }
 
 .company-result {
@@ -142,9 +148,21 @@
     margin: 0 auto;
 }
 
+.notification {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    background-color: #f44336; /* Red */
+    color: white;
+    padding: 16px;
+    border-radius: 4px;
+    z-index: 1000;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
 .responsive-logo {
-    width: 20%;
-    max-width: 50vw;
+    width: 25%;
+    max-width: 60vw;
     min-width: 150px;
     height: auto;
     object-fit: contain;
@@ -158,24 +176,27 @@
 }
 
 .logo-container {
-    flex: 1;
     text-align: left;
+    flex: 2;
     order: 1;
 }
 
 .header-block {
     text-align: center;
-    font-size: 1.5rem;
+    font-size: 1.4rem;
     font-weight: bold;
-    flex-wrap: nowrap;
     flex: 1;
     order: 2;
 }
 
-.placeholder-right {
-    flex: 1;
-    text-align: left;
+.upper-menu-dropdown {
+    text-align: right;
+    flex: 2;
     order: 3;
+}
+
+.dropdown-list-item {
+    text-align: center;
 }
 
 .button-container {
@@ -221,6 +242,13 @@ input[readonly] {
     margin: 0 auto;
 }
 
+@media (max-width: 768px) {
+    .frame {
+        flex-direction: column;
+        align-items: center;
+    }
+}
+
 @media (max-width: 600px) {
     #mainForm {
         width: 95%; /* Adjust the width to be slightly thinner */
@@ -228,15 +256,23 @@ input[readonly] {
         padding: 0 10px; /* Add padding to ensure content doesn't touch the edges */
     }
 
-    .header-block {
-        order: 3;
-        font-size: 1rem; /* Make the header smaller */
-        margin-right: 10px;
-        text-align: left;
+    .form-control {
+        width: 100%; /* Ensure the form control takes full width */
+        box-sizing: border-box; /* Include padding and border in the element's total width and height */
     }
 
-    .placeholder-right {
-        order: 2;
+    .main-header {
+        display: grid;
+        grid-template-columns: 1fr 1fr; /* Two columns for logo and menu */
+        grid-template-rows: auto auto; /* Two rows for header block */
+    }
+
+    .header-block {
+        grid-column: 1 / -1; /* Span across both columns */
+        grid-row: 2; /* Move to the second row */
+        margin-top: 10px; /* Add some margin to separate from the above element */
+        white-space: normal; /* Allow text to wrap */
+        font-size: 1.1rem; /* Make the header smaller */
     }
 
     .row {
@@ -279,10 +315,6 @@ input[readonly] {
     .quotation-row {
         flex-direction: column; /* Stack the rows vertically */
         align-items: flex-start; /* Align items to the start */
-    }
-
-    .header-block {
-        font-size: 1.2rem; /* Make the header smaller */
     }
 
     .alert {

@@ -9,28 +9,53 @@ document.addEventListener('DOMContentLoaded', function() {
     document.addEventListener('input', updateSubmitButtonState);
 
     // Initialize the form
-    updateVolumeFields();
+    if (document.getElementById('volumeFields')) {
+        updateVolumeFields();
+    }
         
     // Ensure the total is correct after the initial volume group is added
-    updateVolumesTotal();
+    if (document.getElementById('volumesTotal')) {
+        updateVolumesTotal();
+    }
 
     // Attach the validateAndSubmitForm function to the form's submit event
-    document.getElementById('mainForm').addEventListener('submit', function(event) {
-        event.preventDefault(); // Prevent form submission
-        document.getElementById('loading-container').style.display = 'flex'; // Show the loading animation
-        document.getElementById('mainForm').style.display = 'none'; // Hide the form
-        validateAndSubmitForm(event);
-    });
-    // Attach the formatCNPJCPF function to the CNPJ input fields
-    document.getElementById('cnpjRemetente').addEventListener('input', formatCNPJCPF);
-    document.getElementById('cnpjDestinatario').addEventListener('input', formatCNPJCPF);
+    const mainForm = document.getElementById('mainForm');
+    if (mainForm) {
+        mainForm.addEventListener('submit', validateAndSubmitForm);
+        console.log('Event listener attached'); //TEST
+    }
 
-    // Attach the formatCEP function to the CEP input fields
-    document.getElementById('cepOrigem').addEventListener('input', formatCEP);
-    document.getElementById('cepDestino').addEventListener('input', formatCEP);
+    // Attach functions to the input fields, if they exist
+    const cnpjRemetente = document.getElementById('cnpjRemetente');
+    if (cnpjRemetente) {
+        cnpjRemetente.addEventListener('input', formatCNPJCPF);
+        cnpjRemetente.addEventListener('input', resetCustomValidity);
+    }
 
-    // Attach the formatEmail function to the e-mail input field
-    document.getElementById('emailEnvio').addEventListener('input', formatEmail);
+    const cnpjDestinatario = document.getElementById('cnpjDestinatario');
+    if (cnpjDestinatario) {
+        cnpjDestinatario.addEventListener('input', formatCNPJCPF);
+        cnpjDestinatario.addEventListener('input', resetCustomValidity);
+        console.log('reset custom validity worked'); //TEST
+    }
+
+    const cepOrigem = document.getElementById('cepOrigem');
+    if (cepOrigem) {
+        cepOrigem.addEventListener('input', formatCEP);
+        cepOrigem.addEventListener('input', resetCustomValidity);
+    }
+
+    const cepDestino = document.getElementById('cepDestino');
+    if (cepDestino) {
+        cepDestino.addEventListener('input', formatCEP);
+        cepDestino.addEventListener('input', resetCustomValidity);
+    }
+
+    const emailEnvio = document.getElementById('emailEnvio');
+    if (emailEnvio) {
+        emailEnvio.addEventListener('input', formatEmail);
+        emailEnvio.addEventListener('input', resetCustomValidity);
+    }
 });
 
 
@@ -62,8 +87,8 @@ function formatCEP(event) {
     let value = input.value.replace(/\D/g, ''); // Remove all non-digit characters
 
     if (value.length <= 8) {
-        // Format as CEP (XXXXX-XXX)
-        value = value.replace(/(\d{5})(\d{3})$/, '$1-$2');
+        // Format as CEP (XX.XXX-XXX)
+        value = value.replace(/(\d{2})(\d{3})(\d{3})$/, '$1.$2-$3');
     }
 
     input.value = value;
@@ -85,13 +110,15 @@ function formatEmail(event) {
 }
 
 function updateVolumeFields() {
-    // Clear existing volume fields and reset counter
     const volumeFieldsContainer = document.getElementById('volumeFields');
-    volumeFieldsContainer.innerHTML = '';
-    volumeGroupIdCounter = 1; // Reset counter for volume groups
-    volumeGroupIds = []; // Reset volumeGroupIds array
-    addVolumeGroup(); // Add the first volume group
-    updateVolumeGroupIds(); // Call updateVolumeGroupIds()
+    if (volumeFieldsContainer) {
+        // Clear existing volume fields and reset counter
+        volumeFieldsContainer.innerHTML = '';
+        volumeGroupIdCounter = 1; // Reset counter for volume groups
+        volumeGroupIds = []; // Reset volumeGroupIds array
+        addVolumeGroup(); // Add the first volume group
+        updateVolumeGroupIds(); // Call updateVolumeGroupIds()
+    }
 }
 
 // Add a hidden input field for volumeGroupIds if not already present
@@ -167,7 +194,11 @@ function updateVolumesTotal() {
     document.querySelectorAll('.dynamicVolumes').forEach(function(input) {
         total += parseInt(input.value, 10) || 0;
     });
-    document.getElementById('volumesTotal').value = total;
+
+    const volumesTotalElement = document.getElementById('volumesTotal');
+    if (volumesTotalElement) {
+        volumesTotalElement.value = total;
+    }
 }
 
 // Format number fields to two decimal places on blur
@@ -180,17 +211,80 @@ document.addEventListener('blur', function(event) {
     }
 }, true);
 
+function showNotification(message) {
+    const notification = document.getElementById('notification');
+    notification.textContent = message;
+    notification.style.display = 'block';
+
+    // Hide the notification after 3 seconds
+    setTimeout(() => {
+        notification.style.display = 'none';
+    }, 3000);
+}
+
+function resetCustomValidity(event) {
+    event.target.setCustomValidity('');
+}
+
 function validateAndSubmitForm(event) {
-    event.preventDefault(); // Prevent form submission
+    console.log('validateAndSubmit function was called') //TEST
+
     let allFilled = true;
+    let validCEP = true;
+    let validCNPJCPF = true;
+
     document.querySelectorAll('#mainForm input.form-control').forEach(function(input) {
         if (input.value === '') {
             allFilled = false;
         }
+        // Reset custom validity messages
+        input.setCustomValidity('');
     });
 
-    if (allFilled) {
-        // Form is valid, proceed with submission
+    // Validate CEP fields
+    const cepOrigem = document.getElementById('cepOrigem');
+    const cepDestino = document.getElementById('cepDestino');
+    const cepPattern = /^\d{2}\.\d{3}-\d{3}$/; // Regular expression for CEP format (XX.XXX-XXX)
+
+    if (cepOrigem && !cepPattern.test(cepOrigem.value)) {
+        validCEP = false;
+        cepOrigem.setCustomValidity('Por favor, insira um CEP válido.');
+        console.log('Invalid CEP for Origem'); //TEST
+    } else if (cepOrigem) {
+        console.log('Valid CEP for Origem'); //TEST
+    }
+
+    if (cepDestino && !cepPattern.test(cepDestino.value)) {
+        validCEP = false;
+        cepDestino.setCustomValidity('Por favor, insira um CEP válido.');
+        console.log('Invalid CEP for Destino'); //TEST
+    } else if (cepDestino) {
+        console.log('Valid CEP for Destino'); //TEST
+    }
+
+    // Validate CNPJ/CPF fields
+    const cnpjRemetente = document.getElementById('cnpjRemetente');
+    const cnpjDestinatario = document.getElementById('cnpjDestinatario');
+    const cnpjCpfPattern = /^(\d{2}\.\d{3}\.\d{3}\/\d{4}-\d{2}|\d{3}\.\d{3}\.\d{3}-\d{2})$/; // Regular expression for formatted CNPJ or CPF
+
+    if (cnpjRemetente && !cnpjCpfPattern.test(cnpjRemetente.value)) {
+        validCNPJCPF = false;
+        cnpjRemetente.setCustomValidity('Por favor, insira um CNPJ ou CPF válido.');
+        console.log('Invalid CNPJ/CPF for Remetente'); //TEST
+    } else if (cnpjRemetente) {
+        console.log('Valid CNPJ/CPF for Remetente'); //TEST
+    }
+
+    if (cnpjDestinatario && !cnpjCpfPattern.test(cnpjDestinatario.value)) {
+        validCNPJCPF = false;
+        cnpjDestinatario.setCustomValidity('Por favor, insira um CNPJ ou CPF válido.');
+        console.log('Invalid CNPJ/CPF for Destinatario'); //TEST
+    } else if (cnpjDestinatario) {
+        console.log('Valid CNPJ/CPF for Destinatario'); //TEST
+    }
+
+    if (allFilled && validCEP && validCNPJCPF) {
+        console.log('Form is valid and ready to submit'); //TEST
         const volumeGroupIdsInput = document.getElementById('volumeGroupIds');
         if (volumeGroupIdsInput) { // Check if the volumeGroupIds input exists
             volumeGroupIdsInput.value = volumeGroupIds.join(','); // Set the value
@@ -198,10 +292,19 @@ function validateAndSubmitForm(event) {
 
         const mainForm = document.getElementById('mainForm');
         if (mainForm) { // Check if the mainForm exists before submitting
+            document.getElementById('loading-container').style.display = 'flex'; // Show the loading animation
+            mainForm.style.display = 'none'; // Hide the form
+            console.log('Form is valid, submitting...'); //TEST
             mainForm.submit(); // This submits the form
         }
     } else {
-        alert('Por favor, preencha todos os campos obrigatórios.');
+        event.preventDefault(); // Prevent form submission
+        document.querySelectorAll('#mainForm input.form-control').forEach(function(input) {
+            input.reportValidity();
+        });
+        showNotification('Dados errados, favor revisar os campos preenchidos.');
+        console.log('Form validation failed'); //TEST
+        return false;
     }
 }
 
