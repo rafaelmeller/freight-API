@@ -1,44 +1,187 @@
-# This project was developed with the assistance of GitHub Copilot and CS50's Duck Debugger (ddb).
+# This project was developed by me with the assistance of GitHub Copilot and CS50's Duck Debugger (ddb).
+# Part of the Flask code was copied from my version of CS50's project "Finance"
 
 import asyncio
 import httpx
+import os
 from datetime import datetime
-from flask import Flask, render_template, request
+from dotenv import load_dotenv, find_dotenv
+from flask import Flask, render_template, request, session, redirect
+from flask_session import Session
 from helpers import (
-    send_email, format_datetime, format_currency, sanitize_text, sanitize_int, sanitize_float,
-    get_patrus_headers, BRASPRESS_HEADERS, BRASPRESS_URL, PATRUS_URL, CUBIC_FACTOR
+    fetch_data, format_datetime, format_currency, get_patrus_headers, login_required, sanitize_float, sanitize_int,
+    sanitize_text, send_email, update_env, CUBIC_FACTOR
 )
+from werkzeug.security import check_password_hash, generate_password_hash
+
+# Clear any cached environment variables
+os.environ.clear()
+
+# Load environment variables from .env file
+load_dotenv(find_dotenv())
 
 app = Flask(__name__)
 
+# Configure session to use filesystem (instead of signed cookies)
+app.config["SESSION_PERMANENT"] = False
+app.config["SESSION_TYPE"] = "filesystem"
+Session(app)
+
+
+@app.after_request
+def after_request(response):
+    """Ensure responses aren't cached"""
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    response.headers["Expires"] = 0
+    response.headers["Pragma"] = "no-cache"
+    return response
+
 
 @app.route('/')
+@login_required
 def index():
     return render_template('index.html')
 
+
+@app.route("/login", methods=["GET", "POST"])
+def login():
+    """Log user in"""
+
+    # Forget any user_id
+    session.clear()
+
+    # User reached route via POST (as by submitting a form via POST)
+    if request.method == "POST":
+        # Ensure username was submitted
+        if not request.form.get("username"):
+            return error("Insira seu nome de usuário", 403)
+
+        # Ensure password was submitted
+        elif not request.form.get("password"):
+            return error("insira sua senha", 403)
+
+        # Reload environment variables
+        load_dotenv()
+
+        # Query .env for username
+        username = os.environ.get('MAIN_USER')
+        user_password = os.environ.get('MAIN_PASSWORD_HASH')
+
+        input_password = request.form.get("password")
+
+        # TEST
+        print("password used for login")
+        print(input_password)
+        print("password in .env")
+        print(user_password)
+
+        # Ensure username exists and password is correct
+        if not check_password_hash(user_password, input_password):
+            return error("Senha inválida", 403)
+        elif username != request.form.get("username"):
+            return error("Usuário não existe", 403)
+
+        # Remember which user has logged in
+        session["user_id"] = username
+
+        # Redirect user to home page
+        return redirect("/")
+
+    # User reached route via GET (as by clicking a link or via redirect)
+    else:
+        # Reload environment variables
+        load_dotenv()
+        
+        return render_template("login.html")
+
+
+@app.route("/logout")
+def logout():
+    """Log user out"""
+
+    # Forget any user_id
+    session.clear()
+
+    # Redirect user to login form
+    return redirect("/")
+
+
+@app.route("/change_password", methods=["GET", "POST"])
+@login_required
+def change_password():
+    if request.method == "POST":
+        user_password = os.environ.get('MAIN_PASSWORD_HASH')
+        new_password = request.form.get("new_password")
+        confirmation = request.form.get("confirmation")
+
+        input_password = request.form.get("password")
+
+        # TEST
+        print("previous password in .env")
+        print(user_password)
+
+        # Ensure id exists and password is correct
+        if not check_password_hash(user_password, input_password):
+            return error("Senha atual incorreta", 403)
+
+        # Ensure password and validation was submitted and are the same
+        if not confirmation == new_password:
+            return error("Nova senha e confirmação são diferentes", 403)
+
+        # Generate a hash for the new password
+        hash = generate_password_hash(new_password)
+
+        # Insert new hash in database
+        update_env("MAIN_PASSWORD_HASH", hash)
+
+        # Reload environment variables
+        load_dotenv()
+
+        # TEST
+        user_password = os.environ.get('MAIN_PASSWORD_HASH')
+        
+        # CHANGED, CONFIRM ITS WORKING LATER
+        if not check_password_hash(user_password, new_password):
+            password_error = "Erro ao alterar a senha!"
+            password_success = None
+        else:
+            password_success = "Senha alterada com sucesso!"
+            password_error = None
+
+        # TEST
+        print("new password in .env")
+        print(hash)
+
+        return render_template("index.html", password_success=password_success, password_error=password_error)
+    else:
+        return render_template("change_password.html")
+
+
 @app.route('/error/<int:code>/<path:error_message>')
-def error(error_message, code):
+def error(error_message="Erro inesperado", code=400):
     return render_template('error.html', error_message=error_message, code=code)
 
+
 @app.route('/submit', methods=['POST'])
-async def submit():
+@login_required
+def submit():
 
     # TEST
     print("submission working")
-    
+
     # Initialize errors and results array (add one slot for each freight company)
-    errors = [None, None] 
+    errors = [None, None]
     results = [None, None]
 
-    patrus_headers, header_error = await get_patrus_headers()
+    patrus_headers, header_error = asyncio.run(get_patrus_headers())
     if header_error:
         patrus_headers = None
-    
-    #TEST
-    print("initiating main form handling")  
-    
+
+    # TEST
+    print("initiating main form handling")
+
     nome_fantasia = request.form['nome_fantasia']
-    
+
     modalidade = "R"
 
     try:
@@ -52,19 +195,19 @@ async def submit():
         cnpj_remetente = sanitize_text(cnpj_tomador)
     except ValueError:
         return error("CNPJ do remetente inválido", 400)
-    
+
     try:
         cnpj_destino = request.form['cnpj_destinatario']
         cnpj_destinatario = sanitize_text(cnpj_destino)
     except ValueError:
         return error("CNPJ do destinatário inválido", 400)
-    
+
     try:
         cep_origem = request.form['cep_origem']
         cep_remetente = sanitize_text(cep_origem)
     except ValueError:
         return error("CEP de origem inválido", 400)
-    
+
     try:
         cep_destino = request.form['cep_destino']
         cep_destinatario = sanitize_text(cep_destino)
@@ -73,19 +216,19 @@ async def submit():
 
     if request.form['tipo_frete'] not in ["1", "2"]:
         return error("Tipo de frete inválido", 400)
-    
+
     tipo_frete = request.form['tipo_frete']
-    
+
     try:
         vlr_mercadoria = sanitize_float(request.form['vlr_mercadoria'])
     except ValueError:
         return error("Valor da mercadoria inválido", 400)
-    
+
     try:
         peso_total = sanitize_float(request.form['peso_total'])
     except ValueError:
         return error("Valor do peso inválido", 400)
-    
+
     try:
         volumes_total = sanitize_int(request.form['volumes_total'])
     except ValueError:
@@ -93,7 +236,7 @@ async def submit():
 
     cubagem = []
 
-    volume_group_ids = request.form['volumeGroupIds'].split(",")   
+    volume_group_ids = request.form['volumeGroupIds'].split(",")
 
     total_cubic_weight = 0
 
@@ -110,7 +253,8 @@ async def submit():
         volumes = sanitize_int(request.form[volumes_key])
 
         # Calculate the cubic weight
-        cubic_weight = (altura * largura * comprimento) * CUBIC_FACTOR * volumes
+        cubic_weight = (altura * largura * comprimento) * \
+            CUBIC_FACTOR * volumes
         total_cubic_weight += cubic_weight
 
         # Store the volume group data
@@ -136,7 +280,7 @@ async def submit():
         "volumes": volumes_total,
         "cubagem": cubagem
     }
-    
+
     patrus_data = {
         "CnpjTomador": cnpj_tomador,
         "CepDestino": cep_destino,
@@ -164,19 +308,13 @@ async def submit():
         "cubagem": cubagem
     }
 
-    async with httpx.AsyncClient() as client:
-        tasks = [
-            client.post(BRASPRESS_URL, json=braspress_data, headers=BRASPRESS_HEADERS, timeout=30.0),
-        ]
-        if patrus_headers:
-            tasks.append(client.post(PATRUS_URL, json=patrus_data, headers=patrus_headers, timeout=30.0))
-        responses = await asyncio.gather(*tasks, return_exceptions=True)
-    
+    responses = asyncio.run(fetch_data(patrus_data, patrus_headers, braspress_data))
+
     for i, response in enumerate(responses):
 
-        #TEST
+        # TEST
         print(response)
-        
+
         if isinstance(response, Exception):
             errors[i] = str(response)
         else:
@@ -200,7 +338,7 @@ async def submit():
         results[0]['prazo'] = delivery_time
         results[0]['totalFrete'] = format_currency(value_result)
 
-        #TEST
+        # TEST
         print("Results 0")
         print(results[0]['prazo'])
         print(results[0])
@@ -208,25 +346,27 @@ async def submit():
     # Patrus
     if results[1]:
         value_result = results[1]['ValorFrete']
-        delivery_date, delivery_time = format_datetime(results[1]['EntregaPrevista'])
+        delivery_date, delivery_time = format_datetime(
+            results[1]['EntregaPrevista'])
         results[1]['entrega'] = delivery_date
         results[1]['prazo'] = delivery_time
         results[1]['ValorFrete'] = format_currency(value_result)
 
-        #TEST
+        # TEST
         print("Result 1")
         print(results[1]['EntregaPrevista'])
         print(results[1])
 
     # SENDING EMAIL
-    recipient_email = email_envio 
+    recipient_email = email_envio
     date = datetime.now().strftime("%d/%m/%Y às %H:%M")
     price = f"{vlr_mercadoria:.2f}"
     subject = f"Cotação para {nome_fantasia} | valor do pedido: R$ {price} | {date}"
     html_content = render_template('email_result.html', results=results, errors=errors, data=main_data, header_error=header_error, date=date)
 
-    email_success, email_error = send_email(subject, recipient_email, html_content)
-    
+    email_success, email_error = send_email(
+        subject, recipient_email, html_content)
+
     return render_template('result.html', results=results, errors=errors, data=main_data, header_error=header_error, email_success=email_success, email_error=email_error)
 
 if __name__ == '__main__':

@@ -129,9 +129,9 @@ def update_env(key, value, env_file='.env'):
                 file.write(f"{key}={value}\n")
             else:
                 file.write(line)
-
-    # Update the environment variable
     os.environ[key] = value
+    load_dotenv()
+    
 
 
 # FUNCTION FOR SENDING EMAILS
