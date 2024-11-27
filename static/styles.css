@@ -162,7 +162,7 @@
 
 .responsive-logo {
     width: 25%;
-    max-width: 60vw;
+    max-width: 110vw;
     min-width: 150px;
     height: auto;
     object-fit: contain;
@@ -177,8 +177,9 @@
 
 .logo-container {
     text-align: left;
-    flex: 2;
+    flex: 1;
     order: 1;
+    width: 100%; /* Ensure it takes full width */
 }
 
 .header-block {
@@ -191,7 +192,7 @@
 
 .upper-menu-dropdown {
     text-align: right;
-    flex: 2;
+    flex: 1;
     order: 3;
 }
 
@@ -295,6 +296,10 @@ input[readonly] {
     .quotation-table th, .quotation-table td {
         padding: 5px;
         font-size: 0.9rem;
+    }
+
+    #company_name_main_form {
+        text-align: left;
     }
 
     .company-result {

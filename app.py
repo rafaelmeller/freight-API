@@ -9,7 +9,7 @@ from dotenv import load_dotenv, find_dotenv
 from flask import Flask, render_template, request, session, redirect
 from flask_session import Session
 from helpers import (
-    fetch_data, format_datetime, format_currency, get_patrus_headers, login_required, sanitize_float, sanitize_int,
+    fetch_data, format_datetime, format_currency, get_headers, login_required, sanitize_float, sanitize_int,
     sanitize_text, send_email, update_env, CUBIC_FACTOR
 )
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -172,10 +172,12 @@ def submit():
     # Initialize errors and results array (add one slot for each freight company)
     errors = [None, None]
     results = [None, None]
+    header_error = [None, None]
 
-    patrus_headers, header_error = asyncio.run(get_patrus_headers())
-    if header_error:
-        patrus_headers = None
+    # Get the headers for the API requests
+    braspress_headers, header_error[0] = asyncio.run(get_headers("braspress"))
+    patrus_headers, header_error[1] = asyncio.run(get_headers("patrus"))
+
 
     # TEST
     print("initiating main form handling")
@@ -293,7 +295,7 @@ def submit():
         },
     }
 
-    main_data = {
+    display_data = {
         "nomeFantasia": nome_fantasia,
         "cnpjRemetente": cnpj_tomador,
         "cnpjDestinatario": cnpj_destino,
@@ -308,7 +310,10 @@ def submit():
         "cubagem": cubagem
     }
 
-    responses = asyncio.run(fetch_data(patrus_data, patrus_headers, braspress_data))
+    braspress_list = [braspress_data, braspress_headers]
+    patrus_list = [patrus_data, patrus_headers]
+
+    responses = asyncio.run(fetch_data(braspress_list, patrus_list))
 
     for i, response in enumerate(responses):
 
@@ -331,6 +336,7 @@ def submit():
 
     # PADRONIZING THE RESULTS
     # Braspress
+    # Response defaut format: {'id': 287242456, 'prazo': 4, 'totalFrete': 1.485,68}
     if results[0]:
         value_result = results[0]['totalFrete']
         delivery_date, delivery_time = format_datetime(results[0]['prazo'])
@@ -342,12 +348,17 @@ def submit():
         print("Results 0")
         print(results[0]['prazo'])
         print(results[0])
+    
+    #TEST
+    else:
+        print("Error 0")
+        print(errors[0])   
 
     # Patrus
+    # Response defaut format: {'ValorFrete': 1485.68, 'EntregaPrevista': '2021-09-30T00:00:00'}
     if results[1]:
         value_result = results[1]['ValorFrete']
-        delivery_date, delivery_time = format_datetime(
-            results[1]['EntregaPrevista'])
+        delivery_date, delivery_time = format_datetime(results[1]['EntregaPrevista'])
         results[1]['entrega'] = delivery_date
         results[1]['prazo'] = delivery_time
         results[1]['ValorFrete'] = format_currency(value_result)
@@ -357,17 +368,22 @@ def submit():
         print(results[1]['EntregaPrevista'])
         print(results[1])
 
+    #TEST
+    else:
+        print("Error 1")
+        print(errors[1])
+
     # SENDING EMAIL
     recipient_email = email_envio
     date = datetime.now().strftime("%d/%m/%Y às %H:%M")
     price = f"{vlr_mercadoria:.2f}"
     subject = f"Cotação para {nome_fantasia} | valor do pedido: R$ {price} | {date}"
-    html_content = render_template('email_result.html', results=results, errors=errors, data=main_data, header_error=header_error, date=date)
+    html_content = render_template('email_result.html', results=results, errors=errors, data=display_data, header_error=header_error, date=date)
 
     email_success, email_error = send_email(
         subject, recipient_email, html_content)
 
-    return render_template('result.html', results=results, errors=errors, data=main_data, header_error=header_error, email_success=email_success, email_error=email_error)
+    return render_template('result.html', results=results, errors=errors, data=display_data, header_error=header_error, email_success=email_success, email_error=email_error)
 
 if __name__ == '__main__':
     app.run(debug=True)

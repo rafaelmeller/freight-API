@@ -65,35 +65,42 @@
         <div class="company-result">
             <h3>Braspress</h3>
             <div class="result-box">
-                {% if results[0] %}
+                {% if header_error[0] %}
                     <div class="additional-info">
-                        <p><strong>ID:</strong> {{ results[0].id }}</p>
-                        <p><strong>Previsão:</strong> {{ results[0].entrega }}</p>
-                        <p><strong>Prazo:</strong> {{ results[0].prazo }} dias</p>
-                        <p><strong>Valor do frete:</strong> {{ results[0].totalFrete }}</p>
-                        <p><strong>Tipo de Frete:&nbsp;</strong>
-                            {% if data.tipoFrete == "1" %}
-                                CIF
-                            {% elif data.tipoFrete == "2" %}
-                                FOB
-                            {% endif %}
-                        </p>
+                        <p><strong>ERRO com a API Braspress</strong></p>
+                        <p><strong>Obs: Contate a assistência técnica</strong></p>
                     </div>
                 {% else %}
-                    <div class="additional-info">
-                        <p><strong>ERRO</strong></p>
-                        <p><strong>Código do erro:</strong> {{ errors[0].statusCode }}</p>
-                        <p><strong>Mensagem:</strong> {{ errors[0].message }}</p>
-                    </div>
+                    {% if results[0] %}
+                        <div class="additional-info">
+                            <p><strong>ID:</strong> {{ results[0].id }}</p>
+                            <p><strong>Previsão:</strong> {{ results[0].entrega }}</p>
+                            <p><strong>Prazo:</strong> {{ results[0].prazo }} dias</p>
+                            <p><strong>Valor do frete:</strong> {{ results[0].totalFrete }}</p>
+                            <p><strong>Tipo de Frete:&nbsp;</strong>
+                                {% if data.tipoFrete == "1" %}
+                                    CIF
+                                {% elif data.tipoFrete == "2" %}
+                                    FOB
+                                {% endif %}
+                            </p>
+                        </div>
+                    {% else %}
+                        <div class="additional-info">
+                            <p><strong>ERRO</strong></p>
+                            <p><strong>Código do erro:</strong> {{ errors[0].statusCode }}</p>
+                            <p><strong>Mensagem:</strong> {{ errors[0].message }}</p>
+                        </div>
+                    {% endif %}
                 {% endif %}
             </div>
         </div> 
         <div class="company-result">
             <h3>Patrus</h3>
             <div class="result-box">
-                {% if header_error %}
+                {% if header_error[1] %}
                     <div class="additional-info">
-                        <p><strong>ERRO COM A API:</strong></p>
+                        <p><strong>ERRO com a API Patrus</strong></p>
                         <p><strong>Código do erro:</strong> {{ header_error.statusCode }}</p>
                         <p><strong>Mensagem:</strong> {{ header_error.message }}: {{ header_error.description }}</p>
                         <p><strong>Obs: Contate a assistência técnica</strong></p>
@@ -101,7 +108,7 @@
                 {% else %}
                     {% if results[1] %}
                         <div class="additional-info">
-                            <p><strong>ID:</strong> - </p>
+                            <p><strong>ID:</strong>  Não fornece</p>
                             <p><strong>Previsão:</strong> {{ results[1].entrega }}</p>
                             <p><strong>Prazo:</strong> {{ results[1].prazo }} dias</p>
                             <p><strong>Valor do frete:</strong> {{ results[1].ValorFrete }}</p>

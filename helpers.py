@@ -21,8 +21,8 @@ SMTP_SERVER = "smtp.gmail.com"
 SMTP_PORT = 587
 
 # BRASPRESS CREDENTIALS, HEADERS AND URL
-BRASPRESS_USERNAME = os.environ.get('BRASPRESS_USERNAME_1')
-BRASPRESS_PASSWORD = os.environ.get('BRASPRESS_PASSWORD_1')
+BRASPRESS_USERNAME = os.environ.get('BRASPRESS_USERNAME')
+BRASPRESS_PASSWORD = os.environ.get('BRASPRESS_PASSWORD')
 BRASPRESS_CREDENTIALS = base64.b64encode(f'{BRASPRESS_USERNAME}:{BRASPRESS_PASSWORD}'.encode('utf-8')).decode('utf-8')
 
 BRASPRESS_HEADERS = {
@@ -40,65 +40,88 @@ PATRUS_SUBSCRIPTION = os.environ.get('PATRUS_SUB_TOKEN')
 
 PATRUS_AUTH_URL = "https://api-patrus.azure-api.net/security/app_services/auth.oauth2.svc/token"
 
-async def get_patrus_access_token():
-    async with httpx.AsyncClient() as client:
-        response = await client.post(
-            PATRUS_AUTH_URL,
-            data={
-                'username': PATRUS_USERNAME,
-                'password': PATRUS_PASSWORD,
-                'grant_type': 'password'
-            },
-            headers={
-            'Content-Type': 'application/x-www-form-urlencoded',
+async def get_api_access_token(company):
+    if company == "patrus":
+        async with httpx.AsyncClient() as client:
+            response = await client.post(
+                PATRUS_AUTH_URL,
+                data={
+                    'username': PATRUS_USERNAME,
+                    'password': PATRUS_PASSWORD,
+                    'grant_type': 'password'
+                },
+                headers={
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Subscription': PATRUS_SUBSCRIPTION
+            }
+            )
+            response.raise_for_status()
+            return response.json()['access_token']
+    
+async def get_headers(company):
+    if company == "braspress":
+        try:
+            credentials = base64.b64encode(f'{BRASPRESS_USERNAME}:{BRASPRESS_PASSWORD}'.encode('utf-8')).decode('utf-8')
+            braspress_headers = {
+                'Authorization': f'Basic {credentials}',
+                'Content-Type': 'application/json; charset=utf-8',
+                'Accept': 'application/json',
+            }
+            return braspress_headers, None
+        except Exception as e:
+            header_error_0 = {
+                'statusCode': 'Unknown',
+                'message': str(e),
+                'description': 'No description available'
+            }
+            return None, header_error_0
+
+    elif company == "patrus":
+        try:
+            access_token = await get_api_access_token("patrus")
+        except httpx.HTTPStatusError as e:
+            response_json = e.response.json()
+            header_error1 = {
+                'statusCode': e.response.status_code,
+                'message': response_json.get('error', 'Unknown error'),
+                'description': response_json.get('error_description', 'No description available')
+            }
+            
+            print(f"HTTP error occurred: {e}")
+            print(f"Response Content: {e.response.text}")
+            return None, header_error1
+        except Exception as e:
+            header_error1 = {
+                'statusCode': 'Unknown',
+                'message': str(e),
+                'description': 'No description available'
+            }
+            return None, header_error1
+
+        patrus_headers = {
+            'Content-Type': 'application/json',
+            'Authorization': f'Bearer {access_token}',
             'Subscription': PATRUS_SUBSCRIPTION
         }
-        )
-        response.raise_for_status()
-        return response.json()['access_token']
-    
-async def get_patrus_headers():
-    try:
-        access_token = await get_patrus_access_token()
-    except httpx.HTTPStatusError as e:
-        response_json = e.response.json()
-        header_error = {
-            'statusCode': e.response.status_code,
-            'message': response_json.get('error', 'Unknown error'),
-            'description': response_json.get('error_description', 'No description available')
-        }
-        
-        print(f"HTTP error occurred: {e}")
-        print(f"Response Content: {e.response.text}")
-        return None, header_error
-    except Exception as e:
-        header_error = {
-            'statusCode': 'Unknown',
-            'message': str(e),
-            'description': 'No description available'
-        }
-        return None, header_error
-
-    headers = {
-        'Content-Type': 'application/json',
-        'Authorization': f'Bearer {access_token}',
-        'Subscription': PATRUS_SUBSCRIPTION
-    }
-    return headers, None
+        return patrus_headers, None
 
 PATRUS_URL = "https://api-patrus.azure-api.net/api/v1/logistica/comercial/cotacoes/online"
 
 CUBIC_FACTOR = 300 # Constant for cubic weight calculation (used only for Patrus)
 
-async def fetch_data(data1, headers1, data2):
+async def fetch_data(braspress_list, patrus_list):
         async with httpx.AsyncClient() as client:
-            tasks = [
-                client.post(BRASPRESS_URL, json=data2,
-                            headers=BRASPRESS_HEADERS, timeout=30.0),
-            ]
-            if headers1:
-                tasks.append(client.post(PATRUS_URL, json=data1,
-                             headers=headers1, timeout=30.0))
+            tasks = []
+
+            braspress_data, braspress_headers = braspress_list
+            patrus_data, patrus_headers = patrus_list
+
+            if braspress_headers:
+                tasks.append(client.post(BRASPRESS_URL, json=braspress_data,
+                            headers=braspress_headers, timeout=30.0))
+            if patrus_headers:
+                tasks.append(client.post(PATRUS_URL, json=patrus_data,
+                             headers=patrus_headers, timeout=30.0))
             return await asyncio.gather(*tasks, return_exceptions=True)
 
 
