@@ -17,7 +17,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 # Clear any cached environment variables
 os.environ.clear()
 
-# Load environment variables from .env file
+# Ensures .env file is properly loaded form the file system
 load_dotenv(find_dotenv())
 
 app = Flask(__name__)
@@ -116,10 +116,6 @@ def change_password():
 
         input_password = request.form.get("password")
 
-        # TEST
-        print("previous password in .env")
-        print(user_password)
-
         # Ensure id exists and password is correct
         if not check_password_hash(user_password, input_password):
             return error("Senha atual incorreta", 403)
@@ -136,21 +132,14 @@ def change_password():
 
         # Reload environment variables
         load_dotenv()
-
-        # TEST
-        user_password = os.environ.get('MAIN_PASSWORD_HASH')
         
-        # CHANGED, CONFIRM ITS WORKING LATER
+        # Inform if the password was updated
         if not check_password_hash(user_password, new_password):
             password_error = "Erro ao alterar a senha!"
             password_success = None
         else:
             password_success = "Senha alterada com sucesso!"
             password_error = None
-
-        # TEST
-        print("new password in .env")
-        print(hash)
 
         return render_template("index.html", password_success=password_success, password_error=password_error)
     else:
@@ -166,9 +155,6 @@ def error(error_message="Erro inesperado", code=400):
 @login_required
 def submit():
 
-    # TEST
-    print("submission working")
-
     # Initialize errors and results array (add one slot for each freight company)
     errors = [None, None]
     results = [None, None]
@@ -178,9 +164,7 @@ def submit():
     braspress_headers, header_error[0] = asyncio.run(get_headers("braspress"))
     patrus_headers, header_error[1] = asyncio.run(get_headers("patrus"))
 
-
-    # TEST
-    print("initiating main form handling")
+    # GET DATA FROM FORM
 
     nome_fantasia = request.form['nome_fantasia']
 
@@ -316,9 +300,6 @@ def submit():
     responses = asyncio.run(fetch_data(braspress_list, patrus_list))
 
     for i, response in enumerate(responses):
-
-        # TEST
-        print(response)
 
         if isinstance(response, Exception):
             errors[i] = str(response)

@@ -1,9 +1,8 @@
 // This project was developed with the assistance of GitHub Copilot and CS50's Duck Debugger (ddb).
 
 document.addEventListener('DOMContentLoaded', function() {
-    // Ensure the element exists before attaching event listeners
     const addVolumeGroupButton = document.getElementById('addVolumeGroup');
-    if (addVolumeGroupButton) {
+    if (addVolumeGroupButton) { // Ensure the element exists before attaching event listeners
         addVolumeGroupButton.addEventListener('click', addVolumeGroup);
     }
     document.addEventListener('input', updateSubmitButtonState);
@@ -22,7 +21,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const mainForm = document.getElementById('mainForm');
     if (mainForm) {
         mainForm.addEventListener('submit', validateAndSubmitForm);
-        console.log('Event listener attached'); //TEST
     }
 
     // Attach functions to the input fields, if they exist
@@ -84,7 +82,7 @@ function formatCNPJCPF(event) {
 
 function formatCEP(event) {
     const input = event.target;
-    let value = input.value.replace(/\D/g, ''); // Remove all non-digit characters
+    let value = input.value.replace(/\D/g, '');
 
     if (value.length <= 8) {
         // Format as CEP (XX.XXX-XXX)
@@ -126,7 +124,7 @@ function updateVolumeGroupIds() {
     document.getElementById('volumeGroupIds').value = volumeGroupIds.join(',');
 }
 
-
+// Adds a volumeGroup to the form, using the volumeGroupIdCounter as the ID
 function addVolumeGroup() {
     const volumeFieldsContainer = document.getElementById('volumeFields');
     const volumeGroupHTML = `
@@ -227,8 +225,6 @@ function resetCustomValidity(event) {
 }
 
 function validateAndSubmitForm(event) {
-    console.log('validateAndSubmit function was called') //TEST
-
     let allFilled = true;
     let validCEP = true;
     let validCNPJCPF = true;
@@ -249,17 +245,11 @@ function validateAndSubmitForm(event) {
     if (cepOrigem && !cepPattern.test(cepOrigem.value)) {
         validCEP = false;
         cepOrigem.setCustomValidity('Por favor, insira um CEP válido.');
-        console.log('Invalid CEP for Origem'); //TEST
-    } else if (cepOrigem) {
-        console.log('Valid CEP for Origem'); //TEST
     }
 
     if (cepDestino && !cepPattern.test(cepDestino.value)) {
         validCEP = false;
         cepDestino.setCustomValidity('Por favor, insira um CEP válido.');
-        console.log('Invalid CEP for Destino'); //TEST
-    } else if (cepDestino) {
-        console.log('Valid CEP for Destino'); //TEST
     }
 
     // Validate CNPJ/CPF fields
@@ -270,21 +260,14 @@ function validateAndSubmitForm(event) {
     if (cnpjRemetente && !cnpjCpfPattern.test(cnpjRemetente.value)) {
         validCNPJCPF = false;
         cnpjRemetente.setCustomValidity('Por favor, insira um CNPJ ou CPF válido.');
-        console.log('Invalid CNPJ/CPF for Remetente'); //TEST
-    } else if (cnpjRemetente) {
-        console.log('Valid CNPJ/CPF for Remetente'); //TEST
     }
 
     if (cnpjDestinatario && !cnpjCpfPattern.test(cnpjDestinatario.value)) {
         validCNPJCPF = false;
         cnpjDestinatario.setCustomValidity('Por favor, insira um CNPJ ou CPF válido.');
-        console.log('Invalid CNPJ/CPF for Destinatario'); //TEST
-    } else if (cnpjDestinatario) {
-        console.log('Valid CNPJ/CPF for Destinatario'); //TEST
     }
 
     if (allFilled && validCEP && validCNPJCPF) {
-        console.log('Form is valid and ready to submit'); //TEST
         const volumeGroupIdsInput = document.getElementById('volumeGroupIds');
         if (volumeGroupIdsInput) { // Check if the volumeGroupIds input exists
             volumeGroupIdsInput.value = volumeGroupIds.join(','); // Set the value
@@ -303,7 +286,6 @@ function validateAndSubmitForm(event) {
             input.reportValidity();
         });
         showNotification('Dados errados, favor revisar os campos preenchidos.');
-        console.log('Form validation failed'); //TEST
         return false;
     }
 }

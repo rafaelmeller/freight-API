@@ -39,12 +39,12 @@
     flex-direction: column;
     justify-content: flex-start;
     align-items: flex-start;
-    padding: 0 5px; /* Adjust padding for better spacing */
+    padding: 0 5px;
 }
 
 .form-control {
-    width: 100%; /* Ensure the form control takes full width */
-    box-sizing: border-box; /* Include padding and border in the element's total width and height */
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .company-result {
@@ -53,9 +53,9 @@
     align-items: center;
     margin: 20px;
     flex: 1;
-    min-width: 300px; /* Set a minimum width */
-    max-width: 400px; /* Set a maximum width */
-    width: 100%; /* Ensure the width is responsive */
+    min-width: 300px;
+    max-width: 400px;
+    width: 100%;
 }
 
 .image-container {
@@ -78,8 +78,8 @@
     padding: 10px;
     border-radius: 5px;
     margin-bottom: 10px;
-    width: 100%; /* Ensure the width is responsive */
-    box-sizing: border-box; /* Include padding in width */
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .quotation-data {
@@ -152,7 +152,7 @@
     position: fixed;
     top: 50%;
     left: 50%;
-    background-color: #f44336; /* Red */
+    background-color: #f44336;
     color: white;
     padding: 16px;
     border-radius: 4px;
@@ -179,7 +179,7 @@
     text-align: left;
     flex: 1;
     order: 1;
-    width: 100%; /* Ensure it takes full width */
+    width: 100%;
 }
 
 .header-block {
@@ -252,41 +252,41 @@ input[readonly] {
 
 @media (max-width: 600px) {
     #mainForm {
-        width: 95%; /* Adjust the width to be slightly thinner */
-        margin: 0 auto; /* Center the form */
-        padding: 0 10px; /* Add padding to ensure content doesn't touch the edges */
+        width: 95%;
+        margin: 0 auto;
+        padding: 0 10px;
     }
 
     .form-control {
-        width: 100%; /* Ensure the form control takes full width */
-        box-sizing: border-box; /* Include padding and border in the element's total width and height */
+        width: 100%;
+        box-sizing: border-box;
     }
 
     .main-header {
         display: grid;
-        grid-template-columns: 1fr 1fr; /* Two columns for logo and menu */
-        grid-template-rows: auto auto; /* Two rows for header block */
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto auto;
     }
 
     .header-block {
-        grid-column: 1 / -1; /* Span across both columns */
-        grid-row: 2; /* Move to the second row */
-        margin-top: 10px; /* Add some margin to separate from the above element */
-        white-space: normal; /* Allow text to wrap */
-        font-size: 1.1rem; /* Make the header smaller */
+        grid-column: 1 / -1;
+        grid-row: 2;
+        margin-top: 10px;
+        white-space: normal;
+        font-size: 1.1rem;
     }
 
     .row {
-        margin: 0; /* Remove row margin */
+        margin: 0;
     }
 
     .col-md-6, .col-md-12 {
-        padding: 0 5px; /* Add padding to columns */
+        padding: 0 5px;
     }
 
     .button-container {
-        width: 100%; /* Ensure button container takes full width */
-        padding: 0 10px; /* Add padding to ensure content doesn't touch the edges */
+        width: 100%;
+        padding: 0 10px;
     }
 
     .quotation-table {
@@ -303,39 +303,39 @@ input[readonly] {
     }
 
     .company-result {
-        width: 90%; /* Adjust the width to be slightly thinner */
-        margin: 10px auto; /* Center the company-result */
+        width: 90%;
+        margin: 10px auto;
     }
 
     .quotation-data {
-        width: 90%; /* Adjust the width to be slightly thinner */
-        margin: 10px auto; /* Center the quotation-data */
+        width: 90%;
+        margin: 10px auto;
     }
 
     .quotation-column {
-        width: 100%; /* Make each column take the full width */
-        padding: 5px; /* Adjust padding for better spacing */
+        width: 100%;
+        padding: 5px;
     }
 
     .quotation-row {
-        flex-direction: column; /* Stack the rows vertically */
-        align-items: flex-start; /* Align items to the start */
+        flex-direction: column;
+        align-items: flex-start;
     }
 
     .alert {
-        width: 90%; /* Adjust the width for smaller screens */
-        max-width: 600px; /* Set a maximum width */
-        margin: 0 auto; /* Center the alert */
+        width: 90%;
+        max-width: 600px;
+        margin: 0 auto;
     }
 
     #loading {
-        width: 60px; /* Adjust the width for smaller screens */
-        height: 10px; /* Adjust the height for smaller screens */
+        width: 60px;
+        height: 10px;
     }
 
     #loading-message {
-        font-size: 1.2em; /* Adjust the font size for smaller screens */
-        margin-top: 10px; /* Adjust the margin for smaller screens */
+        font-size: 1.2em;
+        margin-top: 10px;
     }
 }
 
@@ -345,9 +345,9 @@ input[readonly] {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    height: 100vh; /* Full viewport height */
-    width: 100vw; /* Full viewport width */
-    position: fixed; /* Fixed position to cover the entire screen */
+    height: 100vh;
+    width: 100vw;
+    position: fixed;
     top: 0;
     left: 0;
     background-color: rgba(255, 255, 255, 0.8); /* Semi-transparent background */
@@ -393,5 +393,5 @@ input[readonly] {
     font-size: 1.5em;
     color: #333;
     margin-top: 20px;
-    margin-bottom: 20px; /* Add some margin to position it above the loader */
+    margin-bottom: 20px;
 }

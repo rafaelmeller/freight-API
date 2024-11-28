@@ -177,13 +177,8 @@ def send_email(subject, recipient, html_content):
         server.sendmail(sender_email, recipient, msg.as_string())
         server.quit()
 
-        #TEST
-        print("Email sent successfully")
-
         return True, None
     except Exception as e:
-        #TEST
-        print(f"Failed to send email: {e}")
 
         return False, str(e)
 
