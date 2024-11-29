@@ -69,12 +69,6 @@ def login():
 
         input_password = request.form.get("password")
 
-        # TEST
-        print("password used for login")
-        print(input_password)
-        print("password in .env")
-        print(user_password)
-
         # Ensure username exists and password is correct
         if not check_password_hash(user_password, input_password):
             return error("Senha inválida", 403)
@@ -90,7 +84,7 @@ def login():
     # User reached route via GET (as by clicking a link or via redirect)
     else:
         # Reload environment variables
-        load_dotenv()
+        load_dotenv(find_dotenv())
         
         return render_template("login.html")
 
@@ -131,17 +125,25 @@ def change_password():
         update_env("MAIN_PASSWORD_HASH", hash)
 
         # Reload environment variables
-        load_dotenv()
-        
+        load_dotenv(find_dotenv())
+        user_password = os.environ.get('MAIN_PASSWORD_HASH')
+
+        #TEST
+        print("new hash")
+        print(hash)
+        print("new password")
+        print(new_password)
+        print(".env password")
+        print(os.environ.get('MAIN_PASSWORD_HASH'))
+
         # Inform if the password was updated
         if not check_password_hash(user_password, new_password):
             password_error = "Erro ao alterar a senha!"
-            password_success = None
+            return render_template("index.html", password_error=password_error)
         else:
             password_success = "Senha alterada com sucesso!"
-            password_error = None
+            return render_template("index.html", password_success=password_success)
 
-        return render_template("index.html", password_success=password_success, password_error=password_error)
     else:
         return render_template("change_password.html")
 
@@ -350,7 +352,9 @@ def submit():
         print(results[1])
 
     #TEST
-    else:
+    elif header_error[1]:
+        print("Header error")
+        print(header_error[1])
         print("Error 1")
         print(errors[1])
 

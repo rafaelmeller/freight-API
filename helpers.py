@@ -40,6 +40,8 @@ PATRUS_SUBSCRIPTION = os.environ.get('PATRUS_SUB_TOKEN')
 
 PATRUS_AUTH_URL = "https://api-patrus.azure-api.net/security/app_services/auth.oauth2.svc/token"
 
+PATRUS_URL = "https://api-patrus.azure-api.net/api/v1/logistica/comercial/cotacoes/online"
+
 async def get_api_access_token(company):
     if company == "patrus":
         async with httpx.AsyncClient() as client:
@@ -104,8 +106,6 @@ async def get_headers(company):
             'Subscription': PATRUS_SUBSCRIPTION
         }
         return patrus_headers, None
-
-PATRUS_URL = "https://api-patrus.azure-api.net/api/v1/logistica/comercial/cotacoes/online"
 
 CUBIC_FACTOR = 300 # Constant for cubic weight calculation (used only for Patrus)
 
