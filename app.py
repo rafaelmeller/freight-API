@@ -128,14 +128,6 @@ def change_password():
         load_dotenv(find_dotenv())
         user_password = os.environ.get('MAIN_PASSWORD_HASH')
 
-        #TEST
-        print("new hash")
-        print(hash)
-        print("new password")
-        print(new_password)
-        print(".env password")
-        print(os.environ.get('MAIN_PASSWORD_HASH'))
-
         # Inform if the password was updated
         if not check_password_hash(user_password, new_password):
             password_error = "Erro ao alterar a senha!"
@@ -325,17 +317,7 @@ def submit():
         delivery_date, delivery_time = format_datetime(results[0]['prazo'])
         results[0]['entrega'] = delivery_date
         results[0]['prazo'] = delivery_time
-        results[0]['totalFrete'] = format_currency(value_result)
-
-        # TEST
-        print("Results 0")
-        print(results[0]['prazo'])
-        print(results[0])
-    
-    #TEST
-    else:
-        print("Error 0")
-        print(errors[0])   
+        results[0]['totalFrete'] = format_currency(value_result)  
 
     # Patrus
     # Response defaut format: {'ValorFrete': 1485.68, 'EntregaPrevista': '2021-09-30T00:00:00'}
@@ -345,18 +327,6 @@ def submit():
         results[1]['entrega'] = delivery_date
         results[1]['prazo'] = delivery_time
         results[1]['ValorFrete'] = format_currency(value_result)
-
-        # TEST
-        print("Result 1")
-        print(results[1]['EntregaPrevista'])
-        print(results[1])
-
-    #TEST
-    elif header_error[1]:
-        print("Header error")
-        print(header_error[1])
-        print("Error 1")
-        print(errors[1])
 
     # SENDING EMAIL
     recipient_email = email_envio

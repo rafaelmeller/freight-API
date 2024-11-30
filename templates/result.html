@@ -32,7 +32,7 @@
                             <div class="additional-info">
                                 <p><strong>ID:</strong> {{ results[0].id }}</p>
                                 <p><strong>Previsão:</strong> {{ results[0].entrega }}</p>
-                                <p><strong>Prazo:</strong> {{ results[0].prazo }} dias</p>
+                                <p><strong>Prazo:</strong> {{ results[0].prazo }} dias úteis</p>
                                 <p><strong>Valor do frete:</strong> {{ results[0].totalFrete }}</p>
                                 <p><strong>Tipo de Frete:&nbsp;</strong>
                                     {% if data.tipoFrete == "1" %}
@@ -69,7 +69,7 @@
                             <div class="additional-info">
                                 <p><strong>ID:</strong> Não fornece</p>
                                 <p><strong>Previsão:</strong> {{ results[1].entrega }}</p>
-                                <p><strong>Prazo:</strong> {{ results[1].prazo }} dias</p>
+                                <p><strong>Prazo:</strong> {{ results[1].prazo }} dias úteis</p>
                                 <p><strong>Valor do frete:</strong> {{ results[1].ValorFrete }}</p>
                                 <p><strong>Tipo de Frete:&nbsp;</strong>CIF</p>
                                 <p class="small-text">*trabalha somente com CIF</p>
