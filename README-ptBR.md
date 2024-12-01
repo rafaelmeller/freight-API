@@ -103,7 +103,7 @@ O aplicativo utiliza APIs para obter cotações e prazos.
 **Propósito**: Fornece custos de envio e prazos estimados.
 
 - **Exemplo de Solicitação**:
-```json
+```py
 {
     "cnpjRemetente": 60701190000104, # int
     "cnpjDestinatario": 30539356867, # int
@@ -126,7 +126,7 @@ O aplicativo utiliza APIs para obter cotações e prazos.
 ```
 
 - **Exemplo de Resposta**:
-```json
+```py
 {
     'id': 287242456, # int
     'prazo': 4, # int
@@ -157,7 +157,7 @@ headers=
 ```
 
 - **Exemplo de Resposta**:
-```json
+```py
 {
     "access_token": "example", # str
     "token_type": "example", # str
@@ -171,7 +171,7 @@ headers=
 
 - **Exemplo de Cabeçalhos de Solicitação POST**:
 
-```json
+```py
 {
     'Content-Type': 'application/json',
     'Authorization': f'Bearer access_token', # substitua 'access_token' pelo seu token de acesso
@@ -179,7 +179,7 @@ headers=
 }
 ```
 - **Exemplo de Payload de Solicitação POST**:
-```json
+```py
 {
     "CnpjTomador": "04.790.854/0001-70", # str
     "CepDestino": "88032-005", # str
@@ -193,7 +193,7 @@ headers=
 ```
 
 - **Exemplo de Resposta**:
-```json
+```py
 {
     'ValorFrete': 1485.68,
     'EntregaPrevista': '2021-09-30T00:00:00'
@@ -251,6 +251,7 @@ O aplicativo utiliza credenciais específicas dos contratos de serviço da Estre
 ## Autor 👨🏻‍💻
 
 Desenvolvido por **Rafael Meller**.
+
 [![Linkedin Badge](https://img.shields.io/badge/-Rafael_Meller-blue?style=flat-square&logo=Linkedin&logoColor=white&link=https://www.linkedin.com/in/tgmarinho/)](https://www.linkedin.com/in/rafaelmeller/) 
 [![Gmail Badge](https://img.shields.io/badge/-rafaelmeller.dev@gmail.com-c14438?style=flat-square&logo=Gmail&logoColor=white&link=rafaelmeller.dev@gmail.com)](mailto:rafaelmeller.dev@gmail.com)
 

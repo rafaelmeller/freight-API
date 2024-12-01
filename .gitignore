@@ -1,6 +1,8 @@
 .env
+intro.html
 TODO.txt
 venv/
 __pycache__/
-templates/testing.html
-temporary tests/
+private/
+flask_session/
+videos/

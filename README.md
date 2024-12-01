@@ -106,7 +106,7 @@ The app connects to external APIs to fetch real-time shipping rates and delivery
 **Purpose**: Provides shipping costs and estimated delivery times.
 
 - **Example Request**:
-```json
+```python
 {
   "cnpjRemetente": 60701190000104, # int
   "cnpjDestinatario": 30539356867, # int
@@ -129,7 +129,7 @@ The app connects to external APIs to fetch real-time shipping rates and delivery
 ```
 
 - **Example Response**:
-```json
+```python
 {
   'id': 287242456, # int
   'prazo': 4, # int
@@ -143,7 +143,7 @@ The app connects to external APIs to fetch real-time shipping rates and delivery
 ### **API 1:**
 **Purpose**: Provides the access token.
 - **Example Request**:
-```json
+```python
 
 data=
 {
@@ -160,7 +160,7 @@ headers=
 ```
 
 - **Example Response**:
-```json
+```python
 {
   "access_token": "example", # str
   "token_type": "example", # str
@@ -174,7 +174,7 @@ headers=
 
 - **Example of POST request Headers**:
 
-```json
+```python
 {
   'Content-Type': 'application/json',
   'Authorization': f'Bearer access_token', # replace 'access_token' your access token
@@ -182,7 +182,7 @@ headers=
 }
 ```
 - **Example of POST request Payload**:
-```json
+```python
 {
   "CnpjTomador": "04.790.854/0001-70", # str
   "CepDestino": "88032-005", # str
@@ -197,7 +197,7 @@ headers=
 
 
 - **Example Response**:
-```json
+```python
 {
   'ValorFrete': 1485.68,
   'EntregaPrevista': '2021-09-30T00:00:00'
@@ -261,6 +261,7 @@ The app uses credentials that are specific to Estrela D'Água's service contract
 ## Author 👨🏻‍💻
 
 This project was designed and developed by **Rafael Meller**.
+
 [![Linkedin Badge](https://img.shields.io/badge/-Rafael_Meller-blue?style=flat-square&logo=Linkedin&logoColor=white&link=https://www.linkedin.com/in/tgmarinho/)](https://www.linkedin.com/in/rafaelmeller/) 
 [![Gmail Badge](https://img.shields.io/badge/-rafaelmeller.dev@gmail.com-c14438?style=flat-square&logo=Gmail&logoColor=white&link=rafaelmeller.dev@gmail.com)](mailto:rafaelmeller.dev@gmail.com)
 #
