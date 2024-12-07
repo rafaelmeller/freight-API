@@ -2,7 +2,7 @@
 {% block title %} Login: Cotação de fretes {% endblock %}
 {% block header %} Login {% endblock %}
 {% block main %}
-    <form action="/login" method="post">
+    <form action="{{ url_for('cotacao.login') }}" method="post">
         <div class="mb-3">
             <input required autocomplete="off" autofocus class="form-control mx-auto w-auto" name="username" placeholder="Usuário" type="text">
         </div>

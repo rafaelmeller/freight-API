@@ -6,7 +6,7 @@ import httpx
 import os
 from datetime import datetime
 from dotenv import load_dotenv, find_dotenv
-from flask import Flask, render_template, request, session, redirect
+from flask import Blueprint, Flask, render_template, request, session, redirect, url_for
 from flask_session import Session
 from helpers import (
     fetch_data, format_datetime, format_currency, get_headers, login_required, sanitize_float, sanitize_int,
@@ -22,13 +22,9 @@ load_dotenv(find_dotenv())
 
 app = Flask(__name__)
 
-# Configure session to use filesystem (instead of signed cookies)
-app.config["SESSION_PERMANENT"] = False
-app.config["SESSION_TYPE"] = "filesystem"
-Session(app)
+cotacao_bp = Blueprint('cotacao', __name__, url_prefix='/cotacao')
 
-
-@app.after_request
+@cotacao_bp.after_request
 def after_request(response):
     """Ensure responses aren't cached"""
     response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
@@ -37,13 +33,13 @@ def after_request(response):
     return response
 
 
-@app.route('/')
+@cotacao_bp.route('/')
 @login_required
 def index():
     return render_template('index.html')
 
 
-@app.route("/login", methods=["GET", "POST"])
+@cotacao_bp.route("/login", methods=["GET", "POST"])
 def login():
     """Log user in"""
 
@@ -79,7 +75,7 @@ def login():
         session["user_id"] = username
 
         # Redirect user to home page
-        return redirect("/")
+        return redirect(url_for('cotacao.index'))
 
     # User reached route via GET (as by clicking a link or via redirect)
     else:
@@ -89,7 +85,7 @@ def login():
         return render_template("login.html")
 
 
-@app.route("/logout")
+@cotacao_bp.route("/logout")
 def logout():
     """Log user out"""
 
@@ -97,10 +93,10 @@ def logout():
     session.clear()
 
     # Redirect user to login form
-    return redirect("/")
+    return redirect(url_for('cotacao.login'))
 
 
-@app.route("/change_password", methods=["GET", "POST"])
+@cotacao_bp.route("/change_password", methods=["GET", "POST"])
 @login_required
 def change_password():
     if request.method == "POST":
@@ -140,12 +136,12 @@ def change_password():
         return render_template("change_password.html")
 
 
-@app.route('/error/<int:code>/<path:error_message>')
+@cotacao_bp.route('/error/<int:code>/<path:error_message>')
 def error(error_message="Erro inesperado", code=400):
     return render_template('error.html', error_message=error_message, code=code)
 
 
-@app.route('/submit', methods=['POST'])
+@cotacao_bp.route('/submit', methods=['POST'])
 @login_required
 def submit():
 
@@ -339,6 +335,15 @@ def submit():
         subject, recipient_email, html_content)
 
     return render_template('result.html', results=results, errors=errors, data=display_data, header_error=header_error, email_success=email_success, email_error=email_error)
+
+
+# Register the Blueprint
+app.register_blueprint(cotacao_bp)
+
+# Configure session to use filesystem (instead of signed cookies)
+app.config["SESSION_PERMANENT"] = False
+app.config["SESSION_TYPE"] = "filesystem"
+Session(app)
 
 if __name__ == '__main__':
     app.run(debug=True)
