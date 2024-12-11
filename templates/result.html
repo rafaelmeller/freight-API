@@ -5,7 +5,7 @@
     <div class="alert-container">
         {% if email_success %}
         <div class="alert alert-success alert-dismissible fade show fixed-top" role="alert">
-            <strong>E-mail enviado com sucesso!</strong>
+            <strong>E-mail enviado com sucesso para {{ email_envio }}</strong>
             <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
         </div>
         {% elif email_error %}
@@ -60,8 +60,8 @@
                     {% if header_error[1] %}
                         <div class="additional-info">
                             <p><strong>ERRO com a API Patrus</strong></p>
-                            <p><strong>Código do erro:</strong> {{ header_error.statusCode }}</p>
-                            <p><strong>Mensagem:</strong> {{ header_error.message }}: {{ header_error.description }}</p>
+                            <p><strong>Código do erro:</strong> {{ header_error[1].statusCode }}</p>
+                            <p><strong>Mensagem:</strong> {{ header_error[1].message }}: {{ header_error[1].description }}</p>
                             <p><strong>Obs: Contate a assistência técnica</strong></p>
                         </div>
                     {% else %}

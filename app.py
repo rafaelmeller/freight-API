@@ -334,7 +334,10 @@ def submit():
     email_success, email_error = send_email(
         subject, recipient_email, html_content)
 
-    return render_template('result.html', results=results, errors=errors, data=display_data, header_error=header_error, email_success=email_success, email_error=email_error)
+    # TEST
+    print("Header Error:")
+    print(header_error)
+    return render_template('result.html', results=results, errors=errors, data=display_data, header_error=header_error, email_success=email_success, email_error=email_error, email_envio=email_envio)
 
 
 # Register the Blueprint

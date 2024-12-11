@@ -224,28 +224,28 @@ def format_currency(value):
     return formatted_value
 
 
-def sanitize_text(input_string):
+def sanitize_text(input_str):
     for char in [".", "/", "-", " "]:
-        input_string = input_string.replace(char, "")
-    output_string = int(input_string)
-    return output_string
+        input_str = input_str.replace(char, "")
+    output_str = int(input_str)
+    return output_str
 
 
-def sanitize_int(input_string):
-    if "," in input_string:
-        input_string = input_string.replace(",", ".")
-    elif " " in input_string:
-        input_string = input_string.replace(" ", "")
-    output_string = int(input_string)  
-    return output_string
+def sanitize_int(input_str):
+    if "," in input_str:
+        input_str = input_str.replace(",", ".")
+    elif " " in input_str:
+        input_str = input_str.replace(" ", "")
+    output_str = int(input_str)  
+    return output_str
 
 
-def sanitize_float(input_string):
-    if "," in input_string:
-        input_string = input_string.replace(",", ".")
-    elif " " in input_string:
-        input_string = input_string.replace(" ", "")
-    output_string = float(input_string) 
-    formatted_output = round(output_string, 2)
+def sanitize_float(input_str):
+    if "," in input_str:
+        input_str = input_str.replace(",", ".")
+    elif " " in input_str:
+        input_str = input_str.replace(" ", "")
+    output_str = float(input_str) 
+    formatted_output = round(output_str, 2)
     return formatted_output
 
